@@ -12,7 +12,8 @@ int main()
 
         while (l.isTokenAvailable())
         {
-            std::cout << l.nextToken().getValue() << std::endl;
+            auto t = l.nextToken();
+            std::cout << t.getTokenTypeString() << ": " << t.getValue() << std::endl;
         }
     }
     catch (std::runtime_error e)

@@ -39,7 +39,6 @@ namespace WhileParser
             {std::regex("^<="), TokenType::LTE},
             {std::regex("^>="), TokenType::GTE},
 
-            {std::regex("^[a-zA-Z_][a-zA-Z0-9_]*"), TokenType::IDENTIFIER},
             {std::regex("^[0-9]+"), TokenType::NUMBER},
             {std::regex("^\\+"), TokenType::PLUS},
             {std::regex("^-"), TokenType::MINUS},
@@ -48,7 +47,12 @@ namespace WhileParser
             {std::regex("^>"), TokenType::GT},
             {std::regex("^="), TokenType::EQ},
             {std::regex("^\\("), TokenType::LPAREN},
-            {std::regex("^\\)"), TokenType::RPAREN}};
+            {std::regex("^\\)"), TokenType::RPAREN},
+
+            {std::regex("[ \t]+"), TokenType::WHITESPACE},
+            {std::regex("^[a-zA-Z_][a-zA-Z0-9_]*"), TokenType::IDENTIFIER},
+
+        };
     }
 
     Lexer::~Lexer()

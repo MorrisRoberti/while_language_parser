@@ -7,6 +7,7 @@ namespace WhileParser
     {
         UNKNOWN,
         IDENTIFIER,
+        WHITESPACE,
         NUMBER,
         SKIP,
         IF,
@@ -34,7 +35,7 @@ namespace WhileParser
         NOT,
         LPAREN,
         RPAREN,
-        END_OF_FILE
+        END_OF_FILE,
     };
 }
 

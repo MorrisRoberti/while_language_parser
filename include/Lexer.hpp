@@ -31,7 +31,7 @@ namespace WhileParser
             return m_token_type;
         }
 
-    private:
+        private:
         std::regex m_pattern;
         TokenType m_token_type;
     };

@@ -25,6 +25,79 @@ namespace WhileParser
             return m_value;
         }
 
+        inline const std::string getTokenTypeString()
+        {
+
+            switch (m_token_type)
+            {
+            case TokenType::UNKNOWN:
+                return "UNKNOWN";
+            case TokenType::IDENTIFIER:
+                return "IDENTIFIER";
+            case TokenType::WHITESPACE:
+                return "WHITESPACE";
+            case TokenType::NUMBER:
+                return "NUMBER";
+            case TokenType::SKIP:
+                return "SKIP";
+            case TokenType::IF:
+                return "IF";
+            case TokenType::THEN:
+                return "THEN";
+            case TokenType::ELSE:
+                return "ELSE";
+            case TokenType::ENDIF:
+                return "ENDIF";
+            case TokenType::WHILE:
+                return "WHILE";
+            case TokenType::DO:
+                return "DO";
+            case TokenType::ENDWHILE:
+                return "ENDWHILE";
+            case TokenType::TRUE:
+                return "TRUE";
+            case TokenType::FALSE:
+                return "FALSE";
+            case TokenType::SEMICOLON:
+                return "SEMICOLON";
+            case TokenType::ASSIGN:
+                return "ASSIGN";
+            case TokenType::EQ:
+                return "EQ";
+            case TokenType::LT:
+                return "LT";
+            case TokenType::LTE:
+                return "LTE";
+            case TokenType::GT:
+                return "GT";
+            case TokenType::GTE:
+                return "GTE";
+            case TokenType::PLUS:
+                return "PLUS";
+            case TokenType::MINUS:
+                return "MINUS";
+            case TokenType::MULT:
+                return "MULT";
+            case TokenType::DIV:
+                return "DIV";
+            case TokenType::AND:
+                return "AND";
+            case TokenType::OR:
+                return "OR";
+            case TokenType::NOT:
+                return "NOT";
+            case TokenType::LPAREN:
+                return "LPAREN";
+            case TokenType::RPAREN:
+                return "RPAREN";
+            case TokenType::END_OF_FILE:
+                return "END_OF_FILE";
+
+            default:
+                return "UNKNOWN_ENUM_VALUE";
+            }
+        }
+
     private:
         TokenType m_token_type;
         std::string m_value;
