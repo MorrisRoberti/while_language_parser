@@ -1,17 +1,16 @@
 #include "../include/Lexer.hpp"
-#include "Lexer.hpp"
 
 namespace WhileParser
 {
     Lexer::Lexer(const std::string &filename)
     {
 
-        if (filename.size() < 4 || filename.substr(filename.size() - 4, 3) != ".wh")
+        if (filename.size() < 4 || filename.substr(filename.size() - 3, 3) != ".wh")
         {
             throw std::invalid_argument("The filename has to be at least 1 charachter and has to have extension .wh");
         }
 
-        m_file_stream = std::ifstream(filename, std::ios_base::in);
+        m_file_stream.open(filename, std::ios_base::in);
 
         if (!m_file_stream.is_open())
         {
@@ -47,7 +46,9 @@ namespace WhileParser
             {std::regex("^;"), TokenType::SEMICOLON},
             {std::regex("^<"), TokenType::LT},
             {std::regex("^>"), TokenType::GT},
-            {std::regex("^="), TokenType::EQ}};
+            {std::regex("^="), TokenType::EQ},
+            {std::regex("^\\("), TokenType::LPAREN},
+            {std::regex("^\\)"), TokenType::RPAREN}};
     }
 
     Lexer::~Lexer()
@@ -61,14 +62,22 @@ namespace WhileParser
 
         // reads the next word and finds the correspondence with a token
         std::string word;
-        m_file_stream.getline(word.data(), sizeof(word), ' ');
+        m_file_stream >> word;
 
-        const auto it = std::find(m_rules.begin(), m_rules.end(), [word, this](int &i)
-                                  { return std::regex_match(word, m_rules[i].getPattern()); });
+        if (m_file_stream.peek() == std::char_traits<char>::eof())
+            return Token(TokenType::END_OF_FILE, "EOF");
+
+        const auto it = std::find_if(m_rules.begin(), m_rules.end(), [word, this](TokenRule &r)
+                                     { return std::regex_match(word, r.getPattern()); });
 
         if (it == m_rules.end())
             throw std::runtime_error("The following token does not match any syntax rule: " + word);
 
         return Token(it->getTokenType(), word);
+    }
+
+    bool Lexer::isTokenAvailable()
+    {
+        return m_file_stream.peek() != std::char_traits<char>::eof();
     }
 }

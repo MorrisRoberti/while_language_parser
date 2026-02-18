@@ -45,6 +45,8 @@ namespace WhileParser
 
         Token nextToken();
 
+        bool isTokenAvailable();
+
         Lexer(const Lexer &) = delete;
         Lexer(const Lexer &&) = delete;
         Lexer &operator=(const Lexer &) = delete;
