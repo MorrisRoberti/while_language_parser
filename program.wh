@@ -1,4 +1,4 @@
-WHILE not ( a = b ) do
+whilenot ( a = b ) do
     if a > b then
         a := a - b
     else

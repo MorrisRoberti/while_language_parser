@@ -50,7 +50,7 @@ namespace WhileParser
             {std::regex("^\\)"), TokenType::RPAREN},
 
             {std::regex("[ \t]+"), TokenType::WHITESPACE},
-            {std::regex("^[a-zA-Z_][a-zA-Z0-9_]*"), TokenType::IDENTIFIER},
+            {std::regex("^[a-zA-Z_][a-zA-Z0-9_]*"), TokenType::IDENTIFIER}, // this has to be at the end because it's the stronger rule
 
         };
     }
@@ -72,7 +72,7 @@ namespace WhileParser
             return Token(TokenType::END_OF_FILE, "EOF");
 
         const auto it = std::find_if(m_rules.begin(), m_rules.end(), [word, this](TokenRule &r)
-                                     { return std::regex_match(word, r.getPattern()); });
+                                     { return std::regex_search(word, r.getPattern()); });
 
         if (it == m_rules.end())
             throw std::runtime_error("The following token does not match any syntax rule: " + word);
