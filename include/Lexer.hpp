@@ -8,7 +8,7 @@
 #include <algorithm>
 #include <stdexcept>
 #include <regex>
-#include <vector>
+#include <map>
 #include <fstream>
 #include <string>
 
@@ -31,7 +31,7 @@ namespace WhileParser
             return m_token_type;
         }
 
-        private:
+    private:
         std::regex m_pattern;
         TokenType m_token_type;
     };
@@ -54,7 +54,7 @@ namespace WhileParser
 
     private:
         std::ifstream m_file_stream;
-        std::vector<TokenRule> m_rules;
+        std::unordered_map<std::string, TokenType> m_keywords;
     };
 }
 

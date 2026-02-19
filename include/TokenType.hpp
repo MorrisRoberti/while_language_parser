@@ -28,14 +28,15 @@ namespace WhileParser
         GTE,
         PLUS,
         MINUS,
-        MULT,
-        DIV,
+        WILDCARD,
+        SLASH,
         AND,
         OR,
         NOT,
         LPAREN,
         RPAREN,
         END_OF_FILE,
+        END_OF_LINE
     };
 }
 

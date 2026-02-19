@@ -1,7 +1,4 @@
-whilenot ( a = b ) do
-    if a > b then
-        a := a - b
-    else
-        b := b - a
-    endif
-endwhile
+x := b;
+y := x + 5;
+z := (x * y) - 20;
+skip

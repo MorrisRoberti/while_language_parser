@@ -76,10 +76,10 @@ namespace WhileParser
                 return "PLUS";
             case TokenType::MINUS:
                 return "MINUS";
-            case TokenType::MULT:
-                return "MULT";
-            case TokenType::DIV:
-                return "DIV";
+            case TokenType::WILDCARD:
+                return "WILDCARD";
+            case TokenType::SLASH:
+                return "SLASH";
             case TokenType::AND:
                 return "AND";
             case TokenType::OR:
@@ -92,6 +92,8 @@ namespace WhileParser
                 return "RPAREN";
             case TokenType::END_OF_FILE:
                 return "END_OF_FILE";
+            case TokenType::END_OF_LINE:
+                return "END_OF_LINE";
 
             default:
                 return "UNKNOWN_ENUM_VALUE";

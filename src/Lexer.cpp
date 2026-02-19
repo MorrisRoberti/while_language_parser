@@ -17,42 +17,35 @@ namespace WhileParser
             throw std::runtime_error("Impossible to open the file");
         }
 
-        m_rules = std::vector<TokenRule>{
-            {std::regex("^skip"), TokenType::SKIP},
-
-            {std::regex("^if"), TokenType::IF},
-            {std::regex("^then"), TokenType::THEN},
-            {std::regex("^else"), TokenType::ELSE},
-            {std::regex("^endif"), TokenType::ENDIF},
-
-            {std::regex("^while"), TokenType::WHILE},
-            {std::regex("^do"), TokenType::DO},
-            {std::regex("^endwhile"), TokenType::ENDWHILE},
-
-            {std::regex("^true"), TokenType::TRUE},
-            {std::regex("^false"), TokenType::FALSE},
-            {std::regex("^and"), TokenType::AND},
-            {std::regex("^or"), TokenType::OR},
-            {std::regex("^not"), TokenType::NOT},
-
-            {std::regex("^:="), TokenType::ASSIGN},
-            {std::regex("^<="), TokenType::LTE},
-            {std::regex("^>="), TokenType::GTE},
-
-            {std::regex("^[0-9]+"), TokenType::NUMBER},
-            {std::regex("^\\+"), TokenType::PLUS},
-            {std::regex("^-"), TokenType::MINUS},
-            {std::regex("^;"), TokenType::SEMICOLON},
-            {std::regex("^<"), TokenType::LT},
-            {std::regex("^>"), TokenType::GT},
-            {std::regex("^="), TokenType::EQ},
-            {std::regex("^\\("), TokenType::LPAREN},
-            {std::regex("^\\)"), TokenType::RPAREN},
-
-            {std::regex("[ \t]+"), TokenType::WHITESPACE},
-            {std::regex("^[a-zA-Z_][a-zA-Z0-9_]*"), TokenType::IDENTIFIER}, // this has to be at the end because it's the stronger rule
-
-        };
+        m_keywords = std::unordered_map<std::string, TokenType>{
+            {"skip", TokenType::SKIP},
+            {" ", TokenType::WHITESPACE},
+            {"\n", TokenType::END_OF_LINE},
+            {"if", TokenType::IF},
+            {"then", TokenType::THEN},
+            {"else", TokenType::ELSE},
+            {"endif", TokenType::ENDIF},
+            {"while", TokenType::WHILE},
+            {"do", TokenType::DO},
+            {"endwhile", TokenType::ENDWHILE},
+            {"true", TokenType::TRUE},
+            {"false", TokenType::FALSE},
+            {"and", TokenType::AND},
+            {"or", TokenType::OR},
+            {"not", TokenType::NOT},
+            {":=", TokenType::ASSIGN},
+            {"<=", TokenType::LTE},
+            {">=", TokenType::GTE},
+            {";", TokenType::SEMICOLON},
+            {"+", TokenType::PLUS},
+            {"-", TokenType::MINUS},
+            {"<", TokenType::LT},
+            {">", TokenType::GT},
+            {"=", TokenType::EQ},
+            {"(", TokenType::LPAREN},
+            {")", TokenType::RPAREN},
+            {"*", TokenType::WILDCARD},
+            {"/", TokenType::SLASH}};
     }
 
     Lexer::~Lexer()
@@ -63,21 +56,47 @@ namespace WhileParser
 
     Token Lexer::nextToken()
     {
-
-        // reads the next word and finds the correspondence with a token
         std::string word;
-        m_file_stream >> word;
+        char c;
+        while (m_file_stream.get(c) && c != std::char_traits<char>::eof())
+        {
+            word += c;
 
-        if (m_file_stream.peek() == std::char_traits<char>::eof())
-            return Token(TokenType::END_OF_FILE, "EOF");
+            const auto it = m_keywords.find(word);
 
-        const auto it = std::find_if(m_rules.begin(), m_rules.end(), [word, this](TokenRule &r)
-                                     { return std::regex_search(word, r.getPattern()); });
+            // matching non alphanumeric symbols
+            if (!isalnum(c))
+            {
+                if ((c == '>' || c == '<' || c == ':') && m_file_stream.peek() == '=')
+                    continue;
 
-        if (it == m_rules.end())
-            throw std::runtime_error("The following token does not match any syntax rule: " + word);
+                // special case for underscore, that is part of identifier
+                if (c == '_')
+                    continue;
 
-        return Token(it->getTokenType(), word);
+                if (it == m_keywords.end())
+                    throw std::runtime_error("The following token is not part of the language: " + word);
+            }
+
+            if (isdigit(c))
+            {
+                if (isdigit(m_file_stream.peek()))
+                    continue;
+                return Token(TokenType::NUMBER, word);
+            }
+
+            // matching keywords
+            if (it != m_keywords.end())
+                return Token(it->second, word);
+
+            // fallback to identifier
+            if (!isalnum(m_file_stream.peek()) && std::regex_match(word, std::regex("^[a-zA-Z_][a-zA-Z0-9_]*")))
+            {
+                return Token(TokenType::IDENTIFIER, word);
+            }
+        }
+
+        return Token(TokenType::END_OF_FILE, "EOL");
     }
 
     bool Lexer::isTokenAvailable()
