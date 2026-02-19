@@ -54,74 +54,93 @@ namespace WhileParser
             m_file_stream.close();
     }
 
-    Token Lexer::nextToken()
+    bool Lexer::isIdChar(char c) const
     {
-        std::string word;
-        char c;
-        while (m_file_stream.get(c) && c != std::char_traits<char>::eof())
+        return std::isalnum(static_cast<unsigned char>(c)) || c == '_';
+    }
+
+    Token Lexer::readIdentifierOrKeyword(char first)
+    {
+        std::string word(1, first);
+
+        while (m_file_stream.peek() != EOF && isIdChar(m_file_stream.peek()))
         {
-
-            word += c;
-
-            // special case for underscore identifiers that start with underscore
-            if (word[0] == '_')
-            {
-                if (isalnum(m_file_stream.peek()) || m_file_stream.peek() == '_')
-                    continue;
-
-                return Token(TokenType::IDENTIFIER, word);
-            }
-
-            const auto it = m_keywords.find(word);
-
-            // matching symbols
-            if (!isalnum(word[0]))
-            {
-                if ((word[0] == '>' || word[0] == '<' || word[0] == ':') && m_file_stream.peek() == '=')
-                    continue;
-
-                if (it == m_keywords.end())
-                    return Token(TokenType::UNKNOWN, word);
-
-                return Token(it->second, word);
-            }
-
-            // matching numbers
-            if (isdigit(word[0]) && !isalpha(m_file_stream.peek()))
-            {
-                if (isdigit(m_file_stream.peek()))
-                    continue;
-
-                return Token(TokenType::NUMBER, word);
-            }
-
-            // matching keywords
-            if (isalpha(word[0]))
-            {
-
-                if (isalnum(m_file_stream.peek()) || m_file_stream.peek() == '_')
-                    continue;
-
-                // matching keywords
-                if (it != m_keywords.end())
-                    return Token(it->second, word);
-            }
-
-            // fallback to identifier
-            if (!isalnum(m_file_stream.peek()) || m_file_stream.peek() != '_')
-            {
-                if (std::regex_match(word, std::regex("^[a-zA-Z_][a-zA-Z0-9_]*")))
-                    return Token(TokenType::IDENTIFIER, word);
-                else
-                    throw std::runtime_error("Invalid identifier: " + word);
-            }
+            word += static_cast<char>(m_file_stream.get());
         }
 
-        return Token(TokenType::END_OF_FILE, "EOL");
+        // found a keyword
+        if (auto it = m_keywords.find(word); it != m_keywords.end())
+        {
+            return {it->second, word};
+        }
+
+        // check identifier validity
+        if (std::isdigit(word[0]))
+        {
+            throw std::runtime_error("Invalid identifier: " + word);
+        }
+
+        return {TokenType::IDENTIFIER, std::move(word)};
+    }
+
+    Token Lexer::readNumber(char first)
+    {
+        std::string word(1, first);
+        while (std::isdigit(m_file_stream.peek()))
+        {
+            word += static_cast<char>(m_file_stream.get());
+        }
+
+        if (std::isalpha(m_file_stream.peek()))
+        {
+            word += static_cast<char>(m_file_stream.get());
+            throw std::runtime_error("Invalid identifier: " + word);
+        }
+
+        return {TokenType::NUMBER, std::move(word)};
+    }
+
+    Token Lexer::readSymbol(char first)
+    {
+        std::string word(1, first);
+
+        const std::string compound_symbol = {first, static_cast<char>(m_file_stream.peek())};
+        // check for compound symbols :=, >=, <=.
+        // if the next symbol is a whitespace or in general not a = the instruction below will return 0
+        // so we know we're analyzing a single-character symbol
+        if (m_keywords.count(compound_symbol))
+        {
+            word += static_cast<char>(m_file_stream.get());
+        }
+
+        if (auto it = m_keywords.find(word); it != m_keywords.end())
+        {
+            return {it->second, std::move(word)};
+        }
+
+        return {TokenType::UNKNOWN, std::move(word)};
+    }
+
+    Token Lexer::nextToken()
+    {
+
+        char c;
+        // empty file
+        if (!m_file_stream.get(c))
+        {
+            return {TokenType::END_OF_FILE, "EOF"};
+        }
+
+        if (std::isalpha(c) || c == '_')
+            return readIdentifierOrKeyword(c);
+        if (std::isdigit(c))
+            return readNumber(c);
+
+        return readSymbol(c);
     }
 
     bool Lexer::isTokenAvailable()
     {
-        return m_file_stream.peek() != std::char_traits<char>::eof();
+        return m_file_stream.peek() != EOF;
     }
 }

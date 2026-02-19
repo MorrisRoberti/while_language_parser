@@ -1,1 +1,15 @@
-:+
+if_val := 10;
+while_count := 0;
+
+if not trueandfalse then
+    while_count := 100;
+    result <= 50;
+endif;
+
+_special_var := 99_check;
+
+ifnot(true)then
+    result:=10;
+:   =
+    
+11error_var := 0;

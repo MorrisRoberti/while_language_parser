@@ -7,7 +7,6 @@
 #include <iostream>
 #include <algorithm>
 #include <stdexcept>
-#include <regex>
 #include <map>
 #include <fstream>
 #include <string>
@@ -17,7 +16,6 @@ namespace WhileParser
 
     class Lexer
     {
-
     public:
         Lexer(const std::string &filename);
         ~Lexer();
@@ -32,6 +30,11 @@ namespace WhileParser
         Lexer &&operator=(const Lexer &&) = delete;
 
     private:
+        bool isIdChar(char c) const;
+        Token readIdentifierOrKeyword(char first);
+        Token readNumber(char first);
+        Token readSymbol(char first);
+
         std::ifstream m_file_stream;
         std::unordered_map<std::string, TokenType> m_keywords;
     };
