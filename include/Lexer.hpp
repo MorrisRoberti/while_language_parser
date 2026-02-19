@@ -15,27 +15,6 @@
 namespace WhileParser
 {
 
-    class TokenRule
-    {
-
-    public:
-        TokenRule(const std::regex &pattern, TokenType token_type) : m_pattern(pattern), m_token_type(token_type) {}
-
-        inline const std::regex &getPattern()
-        {
-            return m_pattern;
-        }
-
-        inline TokenType getTokenType()
-        {
-            return m_token_type;
-        }
-
-    private:
-        std::regex m_pattern;
-        TokenType m_token_type;
-    };
-
     class Lexer
     {
 

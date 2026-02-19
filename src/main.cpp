@@ -13,7 +13,7 @@ int main()
         while (l.isTokenAvailable())
         {
             auto t = l.nextToken();
-            if (t.getType() == WhileParser::TokenType::END_OF_LINE)
+            if (t.getType() == WhileParser::TokenType::WHITESPACE || t.getType() == WhileParser::TokenType::END_OF_LINE)
                 continue;
             std::cout << t.getTokenTypeString() << ": " << t.getValue() << std::endl;
         }
