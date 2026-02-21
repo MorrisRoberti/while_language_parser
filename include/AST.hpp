@@ -23,16 +23,16 @@ namespace WhileParser
         inline void printNode() const override
         {
             std::cout << "RootNode -> " << std::endl;
-            std::for_each(m_children.begin(), m_children.end(), [](ASTNode &child)
+            std::for_each(m_children.begin(), m_children.end(), [](const std::unique_ptr<ASTNode> &child)
                           {
                 std::cout << "\tChild: ";
-                child.printNode();
+                child->printNode();
                 std::cout << std::endl; });
         }
 
         inline void addNode(std::unique_ptr<ASTNode> node)
         {
-            m_children.push_back(node);
+            m_children.push_back(std::move(node));
         }
 
     private:
@@ -160,10 +160,10 @@ namespace WhileParser
         inline void printNode() const override
         {
             std::cout << "SequenceNode -> " << std::endl;
-            std::for_each(m_statement_list.begin(), m_statement_list.end(), [](StatementNode &statement)
+            std::for_each(m_statement_list.begin(), m_statement_list.end(), [](const std::unique_ptr<StatementNode> &statement)
                           {
                 std::cout << "\tStatement: ";
-                statement.printNode();
+                statement->printNode();
                 std::cout << std::endl; });
             std::cout << std::endl;
         }
