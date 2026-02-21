@@ -12,7 +12,11 @@ namespace WhileParser
     class Parser
     {
     public:
-        Parser(const std::string &filename) : m_lexer(filename) {}
+        Parser(const std::string &filename) : m_lexer(filename),
+                                              m_current_token(Token(TokenType::END_OF_FILE, "EOF"))
+        {
+            advance(); // get the first token
+        }
 
         std::unique_ptr<RootNode> parse();
 
@@ -39,9 +43,10 @@ namespace WhileParser
         std::unique_ptr<RelationalPredicateNode> parseRelationalPredicate();
 
         // i encapsulate the check of token validity in here
-        Token getToken();
+        void advance();
 
         Lexer m_lexer;
+        Token m_current_token; // lookahead (1)
     };
 
 }

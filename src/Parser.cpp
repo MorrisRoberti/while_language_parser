@@ -28,13 +28,12 @@ namespace WhileParser
 
     std::unique_ptr<StatementNode> Parser::parseStatement()
     {
-        auto token = getToken();
 
-        if (token.getType() == TokenType::WHILE)
+        if (m_current_token.getType() == TokenType::WHILE)
             return parseWhileStatement();
-        if (token.getType() == TokenType::IF)
+        if (m_current_token.getType() == TokenType::IF)
             return parseIfStatement();
-        if (token.getType() == TokenType::SKIP)
+        if (m_current_token.getType() == TokenType::SKIP)
             return parseSkipStatement();
         // assignment
         // sequence
@@ -54,18 +53,20 @@ namespace WhileParser
 
         auto predicateNode = parsePredicate();
 
-        if (auto token = getToken(); token.getType() != TokenType::THEN)
-            throw std::invalid_argument("The IF construct is malformed: expected THEN, got " + token.getTokenTypeString());
+        if (m_current_token.getType() != TokenType::THEN)
+            throw std::invalid_argument("The IF construct is malformed: expected THEN, got " + m_current_token.getTokenTypeString());
 
+        advance();
         auto thenStatementNode = parseStatement();
 
-        if (auto token = getToken(); token.getType() != TokenType::THEN)
-            throw std::invalid_argument("The IF construct is malformed: expected ELSE, got " + token.getTokenTypeString());
+        if (m_current_token.getType() != TokenType::ELSE)
+            throw std::invalid_argument("The IF construct is malformed: expected ELSE, got " + m_current_token.getTokenTypeString());
 
+        advance();
         auto elseStatementNode = parseStatement();
 
-        if (auto token = getToken(); token.getType() != TokenType::THEN)
-            throw std::invalid_argument("The IF construct is malformed: expected ENDIF, got " + token.getTokenTypeString());
+        if (m_current_token.getType() != TokenType::ENDIF)
+            throw std::invalid_argument("The IF construct is malformed: expected ENDIF, got " + m_current_token.getTokenTypeString());
 
         return std::move(std::make_unique<IfNode>(std::move(predicateNode),
                                                   std::move(thenStatementNode), std::move(elseStatementNode)));
@@ -88,14 +89,18 @@ namespace WhileParser
 
         auto predicateNode = parsePredicate();
 
-        if (auto token = getToken(); token.getType() != TokenType::DO)
-            throw std::invalid_argument("The WHILE construct is malformed: expected DO, got " + token.getTokenTypeString());
+        advance();
+        if (m_current_token.getType() != TokenType::DO)
+            throw std::invalid_argument("The WHILE construct is malformed: expected DO, got " + m_current_token.getTokenTypeString());
 
+        advance();
         auto statementNode = parseStatement();
 
-        if (auto token = getToken(); token.getType() != TokenType::ENDWHILE)
-            throw std::invalid_argument("The WHILE construct is malformed: expected ENDWHILE, got " + token.getTokenTypeString());
+        advance();
+        if (m_current_token.getType() != TokenType::ENDWHILE)
+            throw std::invalid_argument("The WHILE construct is malformed: expected ENDWHILE, got " + m_current_token.getTokenTypeString());
 
+        advance();
         return std::move(std::make_unique<WhileNode>(
             std::move(predicateNode), std::move(statementNode)));
     }
@@ -103,8 +108,6 @@ namespace WhileParser
     // TODO
     std::unique_ptr<ExpressionNode> Parser::parseExpression()
     {
-
-        auto token = getToken();
 
         return std::unique_ptr<ExpressionNode>();
     }
@@ -117,31 +120,29 @@ namespace WhileParser
 
         // TODO: handle parenthesis and precedence, for now I leave it as it is
 
-        auto token = getToken();
         if (
-            token.getType() != TokenType::PLUS &&
-            token.getType() != TokenType::MINUS &&
-            token.getType() != TokenType::WILDCARD &&
-            token.getType() != TokenType::SLASH)
-            throw std::invalid_argument("The MATH EXPRESSION construct is malformed: expected PLUS, MINUS, WILDCARD or SLASH, got " + token.getTokenTypeString());
+            m_current_token.getType() != TokenType::PLUS &&
+            m_current_token.getType() != TokenType::MINUS &&
+            m_current_token.getType() != TokenType::WILDCARD &&
+            m_current_token.getType() != TokenType::SLASH)
+            throw std::invalid_argument("The MATH EXPRESSION construct is malformed: expected PLUS, MINUS, WILDCARD or SLASH, got " + m_current_token.getTokenTypeString());
 
         auto rightExpressionNode = parseExpression();
 
-        return std::move(std::make_unique<MathExpressionNode>(token.getValue().data()[0], std::move(leftExpressionNode), std::move(rightExpressionNode)));
+        return std::move(std::make_unique<MathExpressionNode>(m_current_token.getValue().data()[0], std::move(leftExpressionNode), std::move(rightExpressionNode)));
     }
 
     // TODO
     std::unique_ptr<PredicateNode> Parser::parsePredicate()
     {
-        auto token = getToken();
-
+        advance();
         // parseBooleanPredicate
         // parseRelationalPredicate
 
         // base case
-        if (token.getType() == TokenType::TRUE || token.getType() == TokenType::FALSE)
-            return std::move(std::make_unique<PredicateNode>(token.getValue()));
-        if (token.getType() == TokenType::NOT)
+        if (m_current_token.getType() == TokenType::TRUE || m_current_token.getType() == TokenType::FALSE)
+            return std::move(std::make_unique<PredicateNode>(m_current_token.getValue()));
+        if (m_current_token.getType() == TokenType::NOT)
             return parseNotPredicate();
 
         throw std::invalid_argument("The predicate is not valid");
@@ -158,15 +159,14 @@ namespace WhileParser
 
         auto leftPredicateNode = parsePredicate();
 
-        auto token = getToken();
         if (
-            token.getType() != TokenType::AND &&
-            token.getType() != TokenType::OR)
-            throw std::invalid_argument("The BOOLEAN PREDICATE construct is malformed: expected OR or AND, got " + token.getTokenTypeString());
+            m_current_token.getType() != TokenType::AND &&
+            m_current_token.getType() != TokenType::OR)
+            throw std::invalid_argument("The BOOLEAN PREDICATE construct is malformed: expected OR or AND, got " + m_current_token.getTokenTypeString());
 
         auto rightPredicateNode = parsePredicate();
 
-        return std::move(std::make_unique<BooleanPredicateNode>(token.getValue(), std::move(leftPredicateNode),
+        return std::move(std::make_unique<BooleanPredicateNode>(m_current_token.getValue(), std::move(leftPredicateNode),
                                                                 std::move(rightPredicateNode)));
     }
     std::unique_ptr<RelationalPredicateNode> Parser::parseRelationalPredicate()
@@ -175,22 +175,21 @@ namespace WhileParser
 
         auto leftStatementNode = parseStatement();
 
-        auto token = getToken();
         if (
-            token.getType() != TokenType::GTE &&
-            token.getType() != TokenType::GT &&
-            token.getType() != TokenType::EQ &&
-            token.getType() != TokenType::LT &&
-            token.getType() != TokenType::LTE)
-            throw std::invalid_argument("The RELATIONAL PREDICATE construct is malformed: expected <, <=, =, >= or >, got " + token.getTokenTypeString());
+            m_current_token.getType() != TokenType::GTE &&
+            m_current_token.getType() != TokenType::GT &&
+            m_current_token.getType() != TokenType::EQ &&
+            m_current_token.getType() != TokenType::LT &&
+            m_current_token.getType() != TokenType::LTE)
+            throw std::invalid_argument("The RELATIONAL PREDICATE construct is malformed: expected <, <=, =, >= or >, got " + m_current_token.getTokenTypeString());
 
         auto rightStatementNode = parseStatement();
 
-        return std::move(std::make_unique<RelationalPredicateNode>(token.getValue(), std::move(leftStatementNode),
+        return std::move(std::make_unique<RelationalPredicateNode>(m_current_token.getValue(), std::move(leftStatementNode),
                                                                    std::move(rightStatementNode)));
     }
 
-    Token Parser::getToken()
+    void Parser::advance()
     {
 
         auto token = m_lexer.nextToken();
@@ -202,6 +201,6 @@ namespace WhileParser
         if (token.getType() == TokenType::UNKNOWN)
             throw std::invalid_argument("The following token is unknown: " + token.getValue());
 
-        return token;
+        m_current_token = token;
     }
 }
