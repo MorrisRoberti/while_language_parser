@@ -63,6 +63,9 @@ namespace WhileParser
     class PredicateNode : public ASTNode
     {
     public:
+        PredicateNode() = default;
+        PredicateNode(const std::string &terminal_predicate) : m_terminal_predicate(terminal_predicate) {}
+
         virtual void printNode() const override
         {
             std::cout << "PredicateNode -> " << std::endl;

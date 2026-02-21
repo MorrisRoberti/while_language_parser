@@ -12,9 +12,6 @@ namespace WhileParser
     public:
         Token(TokenType type, const std::string &value) : m_token_type(type), m_value(value) {}
 
-        Token(const Token &) = delete;
-        Token(const Token &&) = delete;
-
         inline TokenType getType()
         {
             return m_token_type;
