@@ -12,143 +12,167 @@ namespace WhileParser
     class ASTNode
     {
     public:
-        virtual void print_node() const = 0;
+        virtual void printNode() const = 0;
         virtual ~ASTNode() {}
     };
 
+    // Meta-node that represents the entrypoint
+    class RootNode : public ASTNode
+    {
+    public:
+        inline void printNode() const override
+        {
+            std::cout << "RootNode -> " << std::endl;
+            std::for_each(m_children.begin(), m_children.end(), [](ASTNode &child)
+                          {
+                std::cout << "\tChild: ";
+                child.printNode();
+                std::cout << std::endl; });
+        }
+
+        inline void addNode(std::unique_ptr<ASTNode> node)
+        {
+            m_children.push_back(node);
+        }
+
+    private:
+        std::vector<std::unique_ptr<ASTNode>>
+            m_children;
+    };
+
     // Top Level Non Terminals
-    class Expression : public ASTNode
+    class ExpressionNode : public ASTNode
     {
     public:
-        virtual void print_node() const = 0;
+        virtual void printNode() const = 0;
     };
 
-    class Statement : public ASTNode
+    class StatementNode : public ASTNode
     {
     public:
-        virtual void print_node() const = 0;
+        virtual void printNode() const = 0;
     };
 
-    class Predicate : public ASTNode
+    class PredicateNode : public ASTNode
     {
     public:
-        virtual void print_node() const = 0;
+        virtual void printNode() const = 0;
     };
 
-    class MathOp : public ASTNode
+    class MathOpNode : public ASTNode
     {
     public:
-        virtual void print_node() const = 0;
+        virtual void printNode() const = 0;
     };
 
-    class BooleanOp : public ASTNode
+    class BooleanOpNode : public ASTNode
     {
     public:
-        virtual void print_node() const = 0;
+        virtual void printNode() const = 0;
     };
 
-    class RelationalOp : public ASTNode
+    class RelationalOpNode : public ASTNode
     {
     public:
-        virtual void print_node() const = 0;
+        virtual void printNode() const = 0;
     };
 
     // Productions
-    class AssignmentNode : public Statement
+    class AssignmentNode : public StatementNode
     {
     public:
-        AssignmentNode(const std::string &var_name, std::unique_ptr<Expression> expr)
+        AssignmentNode(const std::string &var_name, std::unique_ptr<ExpressionNode> expr)
             : m_variable_name(var_name), m_expression(std::move(expr)) {}
 
-        inline void print_node() const override
+        inline void printNode() const override
         {
             std::cout << "AssignmentNode -> " << std::endl;
             std::cout << "\tIdentifier: " << m_variable_name << std::endl;
 
             std::cout << "\tExpression: ";
-            m_expression->print_node();
+            m_expression->printNode();
             std::cout << std::endl;
         }
 
     private:
         std::string m_variable_name;
-        std::unique_ptr<Expression> m_expression;
+        std::unique_ptr<ExpressionNode> m_expression;
     };
 
-    class IfNode : public Statement
+    class IfNode : public StatementNode
     {
     public:
-        IfNode(std::unique_ptr<Predicate> condition, std::unique_ptr<Statement> then_statement, std::unique_ptr<Statement> else_statement)
+        IfNode(std::unique_ptr<PredicateNode> condition, std::unique_ptr<StatementNode> then_statement, std::unique_ptr<StatementNode> else_statement)
             : m_condition(std::move(condition)), m_then_branch(std::move(then_statement)), m_else_branch(std::move(else_statement)) {}
 
-        inline void print_node() const override
+        inline void printNode() const override
         {
             std::cout << "IfNode -> " << std::endl;
             std::cout << "\Condition: ";
-            m_condition->print_node();
+            m_condition->printNode();
             std::cout << std::endl;
 
             std::cout << "\tThenBranch: ";
-            m_then_branch->print_node();
+            m_then_branch->printNode();
             std::cout << std::endl;
 
             std::cout << "\tElseBranch: ";
-            m_else_branch->print_node();
+            m_else_branch->printNode();
             std::cout << std::endl;
         }
 
     private:
-        std::unique_ptr<Predicate> m_condition;
-        std::unique_ptr<Statement> m_then_branch;
-        std::unique_ptr<Statement> m_else_branch;
+        std::unique_ptr<PredicateNode> m_condition;
+        std::unique_ptr<StatementNode> m_then_branch;
+        std::unique_ptr<StatementNode> m_else_branch;
     };
 
-    class SkipNode : public Statement
+    class SkipNode : public StatementNode
     {
     };
 
-    class SequenceNode : public Statement
+    class SequenceNode : public StatementNode
     {
     public:
-        SequenceNode(std::vector<std::unique_ptr<Statement>> statement_list) : m_statement_list(std::move(statement_list)) {}
+        SequenceNode(std::vector<std::unique_ptr<StatementNode>> statement_list) : m_statement_list(std::move(statement_list)) {}
 
-        inline void print_node() const override
+        inline void printNode() const override
         {
             std::cout << "SequenceNode -> " << std::endl;
-            std::for_each(m_statement_list.begin(), m_statement_list.end(), [](Statement &statement)
+            std::for_each(m_statement_list.begin(), m_statement_list.end(), [](StatementNode &statement)
                           {
                 std::cout << "\tStatement: ";
-                statement.print_node();
+                statement.printNode();
                 std::cout << std::endl; });
             std::cout << std::endl;
         }
 
     private:
-        std::vector<std::unique_ptr<Statement>> m_statement_list;
+        std::vector<std::unique_ptr<StatementNode>> m_statement_list;
     };
 
-    class WhileNode : public Statement
+    class WhileNode : public StatementNode
     {
     public:
-        WhileNode(std::unique_ptr<Predicate> condition, std::unique_ptr<Statement> statement)
+        WhileNode(std::unique_ptr<PredicateNode> condition, std::unique_ptr<StatementNode> statement)
             : m_condition(std::move(condition)), m_statement(std::move(statement)) {}
 
-        inline void print_node() const override
+        inline void printNode() const override
         {
             std::cout << "WhileNode -> " << std::endl;
 
             std::cout << "\Condition: ";
-            m_condition->print_node();
+            m_condition->printNode();
             std::cout << std::endl;
 
             std::cout << "\Statement: ";
-            m_statement->print_node();
+            m_statement->printNode();
             std::cout << std::endl;
         }
 
     private:
-        std::unique_ptr<Predicate> m_condition;
-        std::unique_ptr<Statement> m_statement;
+        std::unique_ptr<PredicateNode> m_condition;
+        std::unique_ptr<StatementNode> m_statement;
     };
 }
 #endif

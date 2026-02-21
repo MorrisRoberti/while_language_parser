@@ -3,6 +3,8 @@
 
 #include "./Token.hpp"
 #include "./AST.hpp"
+#include "./Lexer.hpp"
+#include "./TokenType.hpp"
 
 namespace WhileParser
 {
@@ -10,20 +12,23 @@ namespace WhileParser
     class Parser
     {
     public:
-        Parser() {}
+        Parser();
 
-        std::unique_ptr<ASTNode> parse();
+        std::unique_ptr<RootNode> parse();
 
     private:
-        ASTNode *parseNumber();
+        // statement parsing
+        std::unique_ptr<StatementNode> parseStatement();
 
-        ASTNode *parseBinaryExprExpr();
+        std::unique_ptr<AssignmentNode> parseAssignmentStatement();
+        std::unique_ptr<IfNode> parseIfStatement();
+        std::unique_ptr<SkipNode> parseSkipStatement();
+        std::unique_ptr<SequenceNode> parseSequenceStatement();
+        std::unique_ptr<WhileNode> parseWhileStatement();
 
-        bool isTokenAvailable();
+        // expression parsing
 
-        void eat();
-
-        Token getNextToken();
+        Lexer m_lexer;
     };
 
 }
