@@ -12,7 +12,18 @@ namespace WhileParser
     class ASTNode
     {
     public:
-        virtual void printNode() const = 0;
+        virtual void printNode(int indent = 0) const = 0;
+        inline void printIndentation(const std::string &print_string, int indent) const
+        {
+            for (int i = 0; i < indent; ++i)
+            {
+                if (i == indent - 1)
+                    std::cout << "|-- ";
+                else
+                    std::cout << "|   ";
+            }
+            std::cout << print_string << std::endl;
+        }
         virtual ~ASTNode() {}
     };
 
@@ -22,15 +33,11 @@ namespace WhileParser
     public:
         RootNode() : m_children(std::vector<std::unique_ptr<ASTNode>>{}) {}
 
-        inline void printNode() const override
+        inline void printNode(int indent = 0) const override
         {
-            std::cout << "RootNode -> " << std::endl;
-            std::for_each(m_children.begin(), m_children.end(), [](const std::unique_ptr<ASTNode> &child)
-                          {
-                std::cout << "\tChild: " << std::endl;
-                std::cout << "\t";
-                child->printNode();
-                std::cout << std::endl; });
+            std::cout << "RootNode" << std::endl;
+            std::for_each(m_children.begin(), m_children.end(), [this](const std::unique_ptr<ASTNode> &child)
+                          { child->printNode(1); });
         }
 
         inline void addNode(std::unique_ptr<ASTNode> node)
@@ -47,10 +54,10 @@ namespace WhileParser
     class ExpressionNode : public ASTNode
     {
     public:
-        inline void printNode() const override
+        inline void printNode(int indent = 0) const override
         {
-            std::cout << "ExpressionNode -> " << std::endl;
-            std::cout << "\tValue: " << m_terminal_expression << std::endl;
+            printIndentation("ExpressionNode", indent);
+            printIndentation(m_terminal_expression, indent + 2);
         }
 
     private:
@@ -60,7 +67,7 @@ namespace WhileParser
     class StatementNode : public ASTNode
     {
     public:
-        virtual void printNode() const = 0;
+        virtual void printNode(int indent = 0) const = 0;
     };
 
     class PredicateNode : public ASTNode
@@ -69,10 +76,10 @@ namespace WhileParser
         PredicateNode() = default;
         PredicateNode(const std::string &terminal_predicate) : m_terminal_predicate(terminal_predicate) {}
 
-        virtual void printNode() const override
+        virtual void printNode(int indent = 0) const override
         {
-            std::cout << "PredicateNode -> " << std::endl;
-            std::cout << "\tValue: " << m_terminal_predicate << std::endl;
+            printIndentation("PredicateNode", indent);
+            printIndentation(m_terminal_predicate, indent + 2);
         }
 
     private:
@@ -82,19 +89,19 @@ namespace WhileParser
     class MathOpNode : public ASTNode
     {
     public:
-        virtual void printNode() const = 0;
+        virtual void printNode(int indent = 0) const = 0;
     };
 
     class BooleanOpNode : public ASTNode
     {
     public:
-        virtual void printNode() const = 0;
+        virtual void printNode(int indent = 0) const = 0;
     };
 
     class RelationalOpNode : public ASTNode
     {
     public:
-        virtual void printNode() const = 0;
+        virtual void printNode(int indent = 0) const = 0;
     };
 
     // Statement productions
@@ -104,14 +111,13 @@ namespace WhileParser
         AssignmentNode(const std::string &var_name, std::unique_ptr<ExpressionNode> expr)
             : m_variable_name(var_name), m_expression(std::move(expr)) {}
 
-        inline void printNode() const override
+        inline void printNode(int indent = 0) const override
         {
-            std::cout << "AssignmentNode -> " << std::endl;
-            std::cout << "\tIdentifier: " << m_variable_name << std::endl;
-
-            std::cout << "\tExpression: ";
-            m_expression->printNode();
-            std::cout << std::endl;
+            printIndentation("AssignmentNode", indent);
+            printIndentation("Identifier", indent + 1);
+            printIndentation(m_variable_name, indent + 2);
+            printIndentation("Expression", indent + 1);
+            m_expression->printNode(indent + 2);
         }
 
     private:
@@ -125,20 +131,17 @@ namespace WhileParser
         IfNode(std::unique_ptr<PredicateNode> condition, std::unique_ptr<StatementNode> then_statement, std::unique_ptr<StatementNode> else_statement)
             : m_condition(std::move(condition)), m_then_branch(std::move(then_statement)), m_else_branch(std::move(else_statement)) {}
 
-        inline void printNode() const override
+        inline void printNode(int indent = 0) const override
         {
-            std::cout << "IfNode -> " << std::endl;
-            std::cout << "\tCondition: ";
-            m_condition->printNode();
-            std::cout << std::endl;
+            printIndentation("IfNode", indent);
+            printIndentation("Condition", indent + 1);
+            m_condition->printNode(indent + 2);
 
-            std::cout << "\tThenBranch: ";
-            m_then_branch->printNode();
-            std::cout << std::endl;
+            printIndentation("ThenBranch", indent + 1);
+            m_then_branch->printNode(indent + 2);
 
-            std::cout << "\tElseBranch: ";
-            m_else_branch->printNode();
-            std::cout << std::endl;
+            printIndentation("ElseBranch", indent + 1);
+            m_else_branch->printNode(indent + 2);
         }
 
     private:
@@ -152,9 +155,9 @@ namespace WhileParser
     public:
         SkipNode() = default;
 
-        inline void printNode() const override
+        inline void printNode(int indent = 0) const override
         {
-            std::cout << "SkipNode" << std::endl;
+            printIndentation("SkipNode", indent);
         }
     };
 
@@ -163,15 +166,14 @@ namespace WhileParser
     public:
         SequenceNode(std::vector<std::unique_ptr<StatementNode>> statement_list) : m_statement_list(std::move(statement_list)) {}
 
-        inline void printNode() const override
+        inline void printNode(int indent = 0) const override
         {
-            std::cout << "SequenceNode -> " << std::endl;
-            std::for_each(m_statement_list.begin(), m_statement_list.end(), [](const std::unique_ptr<StatementNode> &statement)
+            printIndentation("SequenceNode", indent);
+
+            std::for_each(m_statement_list.begin(), m_statement_list.end(), [this, indent](const std::unique_ptr<StatementNode> &statement)
                           {
-                std::cout << "\tStatement: ";
-                statement->printNode();
-                std::cout << std::endl; });
-            std::cout << std::endl;
+                            printIndentation("SequenceNode", indent + 1);
+                            statement->printNode(indent + 2); });
         }
 
     private:
@@ -184,18 +186,14 @@ namespace WhileParser
         WhileNode(std::unique_ptr<PredicateNode> condition, std::unique_ptr<StatementNode> statement)
             : m_condition(std::move(condition)), m_statement(std::move(statement)) {}
 
-        inline void printNode() const override
+        inline void printNode(int indent = 0) const override
         {
+            printIndentation("WhileNode", indent);
+            printIndentation("Condition", indent + 1);
+            m_condition->printNode(indent + 2);
 
-            std::cout << "WhileNode -> " << std::endl;
-
-            std::cout << "\tCondition: " << std::endl;
-            m_condition->printNode();
-            std::cout << std::endl;
-
-            std::cout << "\tStatement: " << std::endl;
-            m_statement->printNode();
-            std::cout << std::endl;
+            printIndentation("Statement", indent + 1);
+            m_statement->printNode(indent + 2);
         }
 
     private:
@@ -211,18 +209,17 @@ namespace WhileParser
                            std::unique_ptr<ExpressionNode> right_expression) : m_math_operation(math_operation), m_left_expression(std::move(left_expression)),
                                                                                m_right_expression(std::move(right_expression)) {}
 
-        inline void printNode() const override
+        inline void printNode(int indent = 0) const override
         {
-            std::cout << "MathExpressionNode -> " << std::endl;
-            std::cout << "\tMathOp: " << m_math_operation << std::endl;
+            printIndentation("MathExpressionNode", indent);
+            printIndentation("MathOp", indent + 1);
+            printIndentation("" + m_math_operation, indent + 2);
 
-            std::cout << "\tLeftSideExpression: ";
-            m_left_expression->printNode();
-            std::cout << std::endl;
+            printIndentation("LeftSideExpression", indent + 1);
+            m_left_expression->printNode(indent + 2);
 
-            std::cout << "\tRightSideExpression: ";
-            m_right_expression->printNode();
-            std::cout << std::endl;
+            printIndentation("RightSideExpression", indent + 1);
+            m_right_expression->printNode(indent + 2);
         }
 
     private:
@@ -237,13 +234,11 @@ namespace WhileParser
     public:
         NotPredicateNode(std::unique_ptr<PredicateNode> predicate) : m_predicate(std::move(predicate)) {}
 
-        inline void printNode() const override
+        inline void printNode(int indent = 0) const override
         {
-            std::cout << "NotPredicateNode -> " << std::endl;
-
-            std::cout << "\tPredicate: ";
-            m_predicate->printNode();
-            std::cout << std::endl;
+            printIndentation("NotPredicateNode", indent);
+            printIndentation("Predicate", indent + 1);
+            m_predicate->printNode(indent + 2);
         }
 
     private:
@@ -257,18 +252,18 @@ namespace WhileParser
                              std::unique_ptr<PredicateNode> right_predicate) : m_boolean_operation(boolean_operation), m_left_predicate(std::move(left_predicate)),
                                                                                m_right_predicate(std::move(m_right_predicate)) {}
 
-        inline void printNode() const override
+        inline void printNode(int indent = 0) const override
         {
-            std::cout << "BooleanPredicateNode -> " << std::endl;
-            std::cout << "\tBooleanOp: " << m_boolean_operation << std::endl;
+            printIndentation("BooleanPredicateNode", indent);
 
-            std::cout << "\tLeftSidePredicate: ";
-            m_left_predicate->printNode();
-            std::cout << std::endl;
+            printIndentation("BooleanOp", indent + 1);
+            printIndentation(m_boolean_operation, indent + 2);
 
-            std::cout << "\tRightSidePredicate: ";
-            m_right_predicate->printNode();
-            std::cout << std::endl;
+            printIndentation("LeftSidePredicate", indent + 1);
+            m_left_predicate->printNode(indent + 2);
+
+            printIndentation("RightSidePredicate", indent + 1);
+            m_right_predicate->printNode(indent + 2);
         }
 
     private:
@@ -284,18 +279,18 @@ namespace WhileParser
                                 std::unique_ptr<StatementNode> right_statement) : m_relational_operation(relational_operation), m_left_statement(std::move(left_statement)),
                                                                                   m_right_statement(std::move(right_statement)) {}
 
-        inline void printNode() const override
+        inline void printNode(int indent = 0) const override
         {
-            std::cout << "RelationalPredicateNode -> " << std::endl;
-            std::cout << "\tRelationalnOp: " << m_relational_operation << std::endl;
+            printIndentation("RelationalPredicateNode", indent);
 
-            std::cout << "\tLeftSideStatement: ";
-            m_left_statement->printNode();
-            std::cout << std::endl;
+            printIndentation("RelationalOp", indent + 1);
+            printIndentation(m_relational_operation, indent + 2);
 
-            std::cout << "\tRightSideStatement: ";
-            m_right_statement->printNode();
-            std::cout << std::endl;
+            printIndentation("LeftSideStatement", indent + 1);
+            m_left_statement->printNode(indent + 2);
+
+            printIndentation("RightSideStatement", indent + 1);
+            m_right_statement->printNode(indent + 2);
         }
 
     private:

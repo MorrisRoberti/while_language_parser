@@ -29,7 +29,6 @@ namespace WhileParser
     std::unique_ptr<StatementNode> Parser::parseStatement()
     {
         auto token = getToken();
-        std::cout << token.getTokenTypeString() << std::endl;
 
         if (token.getType() == TokenType::WHILE)
             return parseWhileStatement();
@@ -135,8 +134,6 @@ namespace WhileParser
     std::unique_ptr<PredicateNode> Parser::parsePredicate()
     {
         auto token = getToken();
-
-        std::cout << token.getTokenTypeString() << std::endl;
 
         // parseBooleanPredicate
         // parseRelationalPredicate
