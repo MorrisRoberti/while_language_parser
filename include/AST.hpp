@@ -44,7 +44,14 @@ namespace WhileParser
     class ExpressionNode : public ASTNode
     {
     public:
-        virtual void printNode() const = 0;
+        inline void printNode() const override
+        {
+            std::cout << "ExpressionNode -> " << std::endl;
+            std::cout << "\tValue: " << m_terminal_expression << std::endl;
+        }
+
+    private:
+        std::string m_terminal_expression;
     };
 
     class StatementNode : public ASTNode
@@ -56,7 +63,14 @@ namespace WhileParser
     class PredicateNode : public ASTNode
     {
     public:
-        virtual void printNode() const = 0;
+        virtual void printNode() const override
+        {
+            std::cout << "PredicateNode -> " << std::endl;
+            std::cout << "\tValue: " << m_terminal_predicate << std::endl;
+        }
+
+    private:
+        std::string m_terminal_predicate;
     };
 
     class MathOpNode : public ASTNode
@@ -77,7 +91,7 @@ namespace WhileParser
         virtual void printNode() const = 0;
     };
 
-    // Productions
+    // Statement productions
     class AssignmentNode : public StatementNode
     {
     public:
@@ -108,7 +122,7 @@ namespace WhileParser
         inline void printNode() const override
         {
             std::cout << "IfNode -> " << std::endl;
-            std::cout << "\Condition: ";
+            std::cout << "\tCondition: ";
             m_condition->printNode();
             std::cout << std::endl;
 
@@ -129,6 +143,13 @@ namespace WhileParser
 
     class SkipNode : public StatementNode
     {
+    public:
+        SkipNode() = default;
+
+        inline void printNode() const override
+        {
+            std::cout << "SkipNode" << std::endl;
+        }
     };
 
     class SequenceNode : public StatementNode
@@ -161,11 +182,11 @@ namespace WhileParser
         {
             std::cout << "WhileNode -> " << std::endl;
 
-            std::cout << "\Condition: ";
+            std::cout << "\tCondition: ";
             m_condition->printNode();
             std::cout << std::endl;
 
-            std::cout << "\Statement: ";
+            std::cout << "\tStatement: ";
             m_statement->printNode();
             std::cout << std::endl;
         }
@@ -174,5 +195,107 @@ namespace WhileParser
         std::unique_ptr<PredicateNode> m_condition;
         std::unique_ptr<StatementNode> m_statement;
     };
+
+    // Expression productions
+    class MathExpressionNode : public ExpressionNode
+    {
+    public:
+        MathExpressionNode(char math_operation, std::unique_ptr<ExpressionNode> left_expression,
+                           std::unique_ptr<ExpressionNode> right_expression) : m_math_operation(math_operation), m_left_expression(std::move(left_expression)),
+                                                                               m_right_expression(std::move(right_expression)) {}
+
+        inline void printNode() const override
+        {
+            std::cout << "MathExpressionNode -> " << std::endl;
+            std::cout << "\tMathOp: " << m_math_operation << std::endl;
+
+            std::cout << "\tLeftSideExpression: ";
+            m_left_expression->printNode();
+            std::cout << std::endl;
+
+            std::cout << "\tRightSideExpression: ";
+            m_right_expression->printNode();
+            std::cout << std::endl;
+        }
+
+    private:
+        char m_math_operation;
+        std::unique_ptr<ExpressionNode> m_left_expression;
+        std::unique_ptr<ExpressionNode> m_right_expression;
+    };
+
+    // Predicate productions
+    class NotPredicateNode : public PredicateNode
+    {
+    public:
+        NotPredicateNode(std::unique_ptr<PredicateNode> predicate) : m_predicate(std::move(predicate)) {}
+
+        inline void printNode() const override
+        {
+            std::cout << "NotPredicateNode -> " << std::endl;
+
+            std::cout << "\tPredicate: ";
+            m_predicate->printNode();
+            std::cout << std::endl;
+        }
+
+    private:
+        std::unique_ptr<PredicateNode> m_predicate;
+    };
+
+    class BooleanPredicateNode : public PredicateNode
+    {
+    public:
+        BooleanPredicateNode(const std::string &boolean_operation, std::unique_ptr<PredicateNode> left_predicate,
+                             std::unique_ptr<PredicateNode> right_predicate) : m_boolean_operation(boolean_operation), m_left_predicate(std::move(left_predicate)),
+                                                                               m_right_predicate(std::move(m_right_predicate)) {}
+
+        inline void printNode() const override
+        {
+            std::cout << "BooleanPredicateNode -> " << std::endl;
+            std::cout << "\tBooleanOp: " << m_boolean_operation << std::endl;
+
+            std::cout << "\tLeftSidePredicate: ";
+            m_left_predicate->printNode();
+            std::cout << std::endl;
+
+            std::cout << "\tRightSidePredicate: ";
+            m_right_predicate->printNode();
+            std::cout << std::endl;
+        }
+
+    private:
+        std::string m_boolean_operation;
+        std::unique_ptr<PredicateNode> m_left_predicate;
+        std::unique_ptr<PredicateNode> m_right_predicate;
+    };
+
+    class RelationalPredicateNode : public PredicateNode
+    {
+    public:
+        RelationalPredicateNode(const std::string &relational_operation, std::unique_ptr<StatementNode> left_statement,
+                                std::unique_ptr<StatementNode> right_statement) : m_relational_operation(relational_operation), m_left_statement(std::move(left_statement)),
+                                                                                  m_right_statement(std::move(right_statement)) {}
+
+        inline void printNode() const override
+        {
+            std::cout << "RelationalPredicateNode -> " << std::endl;
+            std::cout << "\tRelationalnOp: " << m_relational_operation << std::endl;
+
+            std::cout << "\tLeftSideStatement: ";
+            m_left_statement->printNode();
+            std::cout << std::endl;
+
+            std::cout << "\tRightSideStatement: ";
+            m_right_statement->printNode();
+            std::cout << std::endl;
+        }
+
+    private:
+        std::string m_relational_operation;
+        std::unique_ptr<StatementNode> m_left_statement;
+        std::unique_ptr<StatementNode> m_right_statement;
+    };
+
 }
 #endif
