@@ -1,26 +1,25 @@
 # WHILE Language Syntax
 
 ```
-S ::= x := a
+Statement ::= x := Expr
 | skip
-| S1; S2
-| if P then S1 else S2 endif
-| while P do S endwhile
+| Statement1; Statement2
+| if Pred then Statement1 else Statement2 endif
+| while Pred do Statement endwhile
 
-a ::= x
+Expr ::= x
 | n
-| a1 opa a2
+| Expr1 MathOp Expr2
 
-
-P ::= true
+Pred ::= true
 | false
-| not P
-| P1 opb P2
-| a1 opr a2
+| not Pred
+| Pred1 BinaryOp Pred1
+| Statement1 RelationalOp Statement2
 
-opa ::= + | − | ∗ | /
+MathOp ::= + | − | ∗ | /
 
-opb ::= and | or
+BooleanOp ::= and | or
 
-opr ::= < | ≤ | = | > | ≥
+RelationalOp ::= < | ≤ | = | > | ≥
 ```
