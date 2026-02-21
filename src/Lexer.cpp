@@ -141,6 +141,7 @@ namespace WhileParser
 
     bool Lexer::isTokenAvailable()
     {
+
         return m_file_stream.peek() != EOF;
     }
 }

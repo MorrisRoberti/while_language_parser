@@ -22,4 +22,6 @@ MathOp ::= + | − | ∗ | /
 BooleanOp ::= and | or
 
 RelationalOp ::= < | ≤ | = | > | ≥
+
+Parenthesis ::= ( | )
 ```

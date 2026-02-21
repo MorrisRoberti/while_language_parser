@@ -20,12 +20,15 @@ namespace WhileParser
     class RootNode : public ASTNode
     {
     public:
+        RootNode() : m_children(std::vector<std::unique_ptr<ASTNode>>{}) {}
+
         inline void printNode() const override
         {
             std::cout << "RootNode -> " << std::endl;
             std::for_each(m_children.begin(), m_children.end(), [](const std::unique_ptr<ASTNode> &child)
                           {
-                std::cout << "\tChild: ";
+                std::cout << "\tChild: " << std::endl;
+                std::cout << "\t";
                 child->printNode();
                 std::cout << std::endl; });
         }
@@ -183,13 +186,14 @@ namespace WhileParser
 
         inline void printNode() const override
         {
+
             std::cout << "WhileNode -> " << std::endl;
 
-            std::cout << "\tCondition: ";
+            std::cout << "\tCondition: " << std::endl;
             m_condition->printNode();
             std::cout << std::endl;
 
-            std::cout << "\tStatement: ";
+            std::cout << "\tStatement: " << std::endl;
             m_statement->printNode();
             std::cout << std::endl;
         }

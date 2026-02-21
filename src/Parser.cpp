@@ -6,16 +6,18 @@ namespace WhileParser
 
     std::unique_ptr<RootNode> Parser::parse()
     {
-        auto root = std::unique_ptr<RootNode>();
+
+        auto root = std::make_unique<RootNode>();
         try
         {
             while (m_lexer.isTokenAvailable())
             {
                 // at the level 1 of the AST it's only possible to have Statements
-                root->addNode(std::move(parseStatement()));
+                auto statementNode = parseStatement();
+                root->addNode(std::move(statementNode));
             }
         }
-        catch (std::exception exception)
+        catch (std::invalid_argument exception)
         {
             std::cerr << exception.what() << std::endl;
             throw exception; // to catch in the entrypoint
@@ -27,6 +29,7 @@ namespace WhileParser
     std::unique_ptr<StatementNode> Parser::parseStatement()
     {
         auto token = getToken();
+        std::cout << token.getTokenTypeString() << std::endl;
 
         if (token.getType() == TokenType::WHILE)
             return parseWhileStatement();
@@ -38,7 +41,7 @@ namespace WhileParser
         // sequence
 
         // placeholder
-        return std::unique_ptr<StatementNode>();
+        throw std::invalid_argument("The syntax is not correct");
     }
 
     std::unique_ptr<AssignmentNode> Parser::parseAssignmentStatement()
@@ -71,7 +74,7 @@ namespace WhileParser
 
     std::unique_ptr<SkipNode> Parser::parseSkipStatement()
     {
-        return std::unique_ptr<SkipNode>();
+        return std::move(std::make_unique<SkipNode>());
     }
 
     // TODO
@@ -102,7 +105,7 @@ namespace WhileParser
     std::unique_ptr<ExpressionNode> Parser::parseExpression()
     {
 
-        //
+        auto token = getToken();
 
         return std::unique_ptr<ExpressionNode>();
     }
@@ -112,6 +115,8 @@ namespace WhileParser
         // ExpressionNode, MathOp, ExpressionNode
 
         auto leftExpressionNode = parseExpression();
+
+        // TODO: handle parenthesis and precedence, for now I leave it as it is
 
         auto token = getToken();
         if (
@@ -131,8 +136,12 @@ namespace WhileParser
     {
         auto token = getToken();
 
-        // parse booleanPredicate
-        // parse RelationalPredicate
+        std::cout << token.getTokenTypeString() << std::endl;
+
+        // parseBooleanPredicate
+        // parseRelationalPredicate
+
+        // base case
         if (token.getType() == TokenType::TRUE || token.getType() == TokenType::FALSE)
             return std::move(std::make_unique<PredicateNode>(token.getValue()));
         if (token.getType() == TokenType::NOT)
@@ -141,14 +150,11 @@ namespace WhileParser
         throw std::invalid_argument("The predicate is not valid");
     }
 
-    // TODO
     std::unique_ptr<NotPredicateNode> Parser::parseNotPredicate()
     {
-
-        auto predicate = parsePredicate();
-
-        return std::move(std::make_unique<NotPredicateNode>(std::move(predicate)));
+        return std::move(std::make_unique<NotPredicateNode>(std::move(parsePredicate())));
     }
+
     std::unique_ptr<BooleanPredicateNode> Parser::parseBooleanPredicate()
     {
         // PredicateNode, BooleanOp, PredicateNode

@@ -12,7 +12,7 @@ namespace WhileParser
     class Parser
     {
     public:
-        Parser();
+        Parser(const std::string &filename) : m_lexer(filename) {}
 
         std::unique_ptr<RootNode> parse();
 

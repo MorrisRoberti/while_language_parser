@@ -24,8 +24,8 @@ namespace WhileParser
 
         bool isTokenAvailable();
 
-        Lexer(const Lexer &) = delete;
-        Lexer(const Lexer &&) = delete;
+        Lexer(const Lexer &other) {}
+        Lexer(const Lexer &&) {}
         Lexer &operator=(const Lexer &) = delete;
         Lexer &&operator=(const Lexer &&) = delete;
 
