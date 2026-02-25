@@ -1,4 +1,4 @@
-while not true do
-if false then skip else skip endif
-endwhile
-skip
+if true then
+x := 10;
+y := x;
+else skip endif

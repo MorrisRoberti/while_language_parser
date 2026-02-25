@@ -54,6 +54,9 @@ namespace WhileParser
     class ExpressionNode : public ASTNode
     {
     public:
+        ExpressionNode() = default;
+        ExpressionNode(const std::string &terminal_expression) : m_terminal_expression(terminal_expression) {}
+
         inline void printNode(int indent = 0) const override
         {
             printIndentation("ExpressionNode", indent);
@@ -249,7 +252,7 @@ namespace WhileParser
     public:
         BooleanPredicateNode(const std::string &boolean_operation, std::unique_ptr<PredicateNode> left_predicate,
                              std::unique_ptr<PredicateNode> right_predicate) : m_boolean_operation(boolean_operation), m_left_predicate(std::move(left_predicate)),
-                                                                               m_right_predicate(std::move(m_right_predicate)) {}
+                                                                               m_right_predicate(std::move(right_predicate)) {}
 
         inline void printNode(int indent = 0) const override
         {

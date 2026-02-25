@@ -13,7 +13,8 @@ namespace WhileParser
     {
     public:
         Parser(const std::string &filename) : m_lexer(filename),
-                                              m_current_token(Token(TokenType::END_OF_FILE, "EOF"))
+                                              m_current_token(Token(TokenType::END_OF_FILE, "EOF")),
+                                              m_parenthesis_count(0)
         {
             advance(); // get the first token
         }
@@ -47,6 +48,7 @@ namespace WhileParser
 
         Lexer m_lexer;
         Token m_current_token; // lookahead (1)
+        int m_parenthesis_count;
     };
 
 }

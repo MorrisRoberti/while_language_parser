@@ -44,8 +44,10 @@ namespace WhileParser
             advance();
             return parseSkipStatement();
         }
-
-        // assignment
+        if (m_current_token.getType() == TokenType::IDENTIFIER)
+        {
+            return parseSequenceStatement();
+        }
         // sequence
 
         // placeholder
@@ -54,7 +56,19 @@ namespace WhileParser
 
     std::unique_ptr<AssignmentNode> Parser::parseAssignmentStatement()
     {
-        return std::unique_ptr<AssignmentNode>();
+        auto identifier = m_current_token.getValue();
+        advance();
+
+        if (m_current_token.getType() == TokenType::ASSIGN)
+            advance();
+
+        if (m_current_token.getType() == TokenType::IDENTIFIER || m_current_token.getType() == TokenType::NUMBER)
+            advance();
+
+        if (m_current_token.getType() == TokenType::SEMICOLON)
+            advance();
+
+        return std::move(std::make_unique<AssignmentNode>(identifier, std::move(std::make_unique<ExpressionNode>(m_current_token.getValue()))));
     }
 
     std::unique_ptr<IfNode> Parser::parseIfStatement()
@@ -92,7 +106,14 @@ namespace WhileParser
     // TODO
     std::unique_ptr<SequenceNode> Parser::parseSequenceStatement()
     {
-        return std::unique_ptr<SequenceNode>();
+
+        auto firstStatement = parseAssignmentStatement();
+
+        auto secondStatement = parseAssignmentStatement();
+        advance();
+
+        return std::move(std::make_unique<SequenceNode>(
+            std::vector<std::unique_ptr<StatementNode>>{std::move(firstStatement), std::move(secondStatement)}));
     }
 
     std::unique_ptr<WhileNode> Parser::parseWhileStatement()
@@ -145,9 +166,8 @@ namespace WhileParser
     // TODO
     std::unique_ptr<PredicateNode> Parser::parsePredicate()
     {
-        // parseBooleanPredicate
         // parseRelationalPredicate
-
+        // parseBooleanPredicate true o false o not
         // base case
         if (m_current_token.getType() == TokenType::TRUE || m_current_token.getType() == TokenType::FALSE)
         {
@@ -173,16 +193,24 @@ namespace WhileParser
     {
         // PredicateNode, BooleanOp, PredicateNode
 
-        auto leftPredicateNode = parsePredicate();
+        auto leftPredicateNode = std::make_unique<PredicateNode>(m_current_token.getValue());
+        if (m_current_token.getType() != TokenType::TRUE && m_current_token.getType() != TokenType::FALSE)
+            leftPredicateNode = parsePredicate();
+        advance();
 
         if (
             m_current_token.getType() != TokenType::AND &&
             m_current_token.getType() != TokenType::OR)
-            throw std::invalid_argument("The BOOLEAN PREDICATE construct is malformed: expected OR or AND, got " + m_current_token.getTokenTypeString());
+            return nullptr;
 
-        auto rightPredicateNode = parsePredicate();
+        std::string binaryOperator = m_current_token.getValue();
+        advance();
 
-        return std::move(std::make_unique<BooleanPredicateNode>(m_current_token.getValue(), std::move(leftPredicateNode),
+        auto rightPredicateNode = std::make_unique<PredicateNode>(m_current_token.getValue());
+        if (m_current_token.getType() != TokenType::TRUE && m_current_token.getType() != TokenType::FALSE)
+            rightPredicateNode = parsePredicate();
+
+        return std::move(std::make_unique<BooleanPredicateNode>(binaryOperator, std::move(leftPredicateNode),
                                                                 std::move(rightPredicateNode)));
     }
     std::unique_ptr<RelationalPredicateNode> Parser::parseRelationalPredicate()
