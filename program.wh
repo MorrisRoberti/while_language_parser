@@ -1,4 +1,4 @@
-while true do
-skip
+while not true do
+if false then skip else skip endif
 endwhile
 skip

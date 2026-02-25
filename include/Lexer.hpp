@@ -36,6 +36,7 @@ namespace WhileParser
         Token readSymbol(char first);
 
         std::ifstream m_file_stream;
+        bool m_eof;
         std::unordered_map<std::string, TokenType> m_keywords;
     };
 }

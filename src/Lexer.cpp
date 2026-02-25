@@ -17,6 +17,8 @@ namespace WhileParser
             throw std::runtime_error("Impossible to open the file");
         }
 
+        m_eof = false;
+
         m_keywords = std::unordered_map<std::string, TokenType>{
             {"skip", TokenType::SKIP},
             {" ", TokenType::WHITESPACE},
@@ -128,6 +130,7 @@ namespace WhileParser
         // empty file
         if (!m_file_stream.get(c))
         {
+            m_eof = true;
             return {TokenType::END_OF_FILE, "EOF"};
         }
 
@@ -142,6 +145,6 @@ namespace WhileParser
     bool Lexer::isTokenAvailable()
     {
 
-        return m_file_stream.peek() != EOF;
+        return !m_eof;
     }
 }

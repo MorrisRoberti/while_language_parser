@@ -30,11 +30,21 @@ namespace WhileParser
     {
 
         if (m_current_token.getType() == TokenType::WHILE)
+        {
+            advance();
             return parseWhileStatement();
+        }
         if (m_current_token.getType() == TokenType::IF)
+        {
+            advance();
             return parseIfStatement();
+        }
         if (m_current_token.getType() == TokenType::SKIP)
+        {
+            advance();
             return parseSkipStatement();
+        }
+
         // assignment
         // sequence
 
@@ -55,18 +65,19 @@ namespace WhileParser
 
         if (m_current_token.getType() != TokenType::THEN)
             throw std::invalid_argument("The IF construct is malformed: expected THEN, got " + m_current_token.getTokenTypeString());
-
         advance();
+
         auto thenStatementNode = parseStatement();
 
         if (m_current_token.getType() != TokenType::ELSE)
             throw std::invalid_argument("The IF construct is malformed: expected ELSE, got " + m_current_token.getTokenTypeString());
-
         advance();
+
         auto elseStatementNode = parseStatement();
 
         if (m_current_token.getType() != TokenType::ENDIF)
             throw std::invalid_argument("The IF construct is malformed: expected ENDIF, got " + m_current_token.getTokenTypeString());
+        advance();
 
         return std::move(std::make_unique<IfNode>(std::move(predicateNode),
                                                   std::move(thenStatementNode), std::move(elseStatementNode)));
@@ -74,6 +85,7 @@ namespace WhileParser
 
     std::unique_ptr<SkipNode> Parser::parseSkipStatement()
     {
+
         return std::move(std::make_unique<SkipNode>());
     }
 
@@ -89,18 +101,16 @@ namespace WhileParser
 
         auto predicateNode = parsePredicate();
 
-        advance();
         if (m_current_token.getType() != TokenType::DO)
             throw std::invalid_argument("The WHILE construct is malformed: expected DO, got " + m_current_token.getTokenTypeString());
-
         advance();
+
         auto statementNode = parseStatement();
 
-        advance();
         if (m_current_token.getType() != TokenType::ENDWHILE)
             throw std::invalid_argument("The WHILE construct is malformed: expected ENDWHILE, got " + m_current_token.getTokenTypeString());
-
         advance();
+
         return std::move(std::make_unique<WhileNode>(
             std::move(predicateNode), std::move(statementNode)));
     }
@@ -135,17 +145,23 @@ namespace WhileParser
     // TODO
     std::unique_ptr<PredicateNode> Parser::parsePredicate()
     {
-        advance();
         // parseBooleanPredicate
         // parseRelationalPredicate
 
         // base case
         if (m_current_token.getType() == TokenType::TRUE || m_current_token.getType() == TokenType::FALSE)
-            return std::move(std::make_unique<PredicateNode>(m_current_token.getValue()));
+        {
+            auto predicateNode = std::make_unique<PredicateNode>(m_current_token.getValue());
+            advance();
+            return std::move(predicateNode);
+        }
         if (m_current_token.getType() == TokenType::NOT)
+        {
+            advance();
             return parseNotPredicate();
+        }
 
-        throw std::invalid_argument("The predicate is not valid");
+        throw std::invalid_argument("The predicate is not valid, current token: " + m_current_token.getTokenTypeString());
     }
 
     std::unique_ptr<NotPredicateNode> Parser::parseNotPredicate()

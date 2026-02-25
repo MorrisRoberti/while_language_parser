@@ -237,8 +237,7 @@ namespace WhileParser
         inline void printNode(int indent = 0) const override
         {
             printIndentation("NotPredicateNode", indent);
-            printIndentation("Predicate", indent + 1);
-            m_predicate->printNode(indent + 2);
+            m_predicate->printNode(indent + 1);
         }
 
     private:
