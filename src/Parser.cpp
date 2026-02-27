@@ -48,7 +48,6 @@ namespace WhileParser
         {
             return parseSequenceStatement();
         }
-        // sequence
 
         // placeholder
         throw std::invalid_argument("The syntax is not correct");
@@ -56,19 +55,28 @@ namespace WhileParser
 
     std::unique_ptr<AssignmentNode> Parser::parseAssignmentStatement()
     {
+        std::unique_ptr<ExpressionNode> leftExpressionNode = nullptr;
+
+        if (m_current_token.getType() != TokenType::IDENTIFIER)
+            throw std::invalid_argument("The ASSIGNMENT construct is malformed: expected IDENTIFIER, got " + m_current_token.getTokenTypeString());
+
         auto identifier = m_current_token.getValue();
         advance();
 
-        if (m_current_token.getType() == TokenType::ASSIGN)
-            advance();
+        if (m_current_token.getType() != TokenType::ASSIGN)
+            throw std::invalid_argument("The ASSIGNMENT construct is malformed: expected :=, got " + m_current_token.getTokenTypeString());
+        advance();
 
-        if (m_current_token.getType() == TokenType::IDENTIFIER || m_current_token.getType() == TokenType::NUMBER)
-            advance();
+        if (m_current_token.getType() != TokenType::IDENTIFIER && m_current_token.getType() != TokenType::NUMBER)
+            throw std::invalid_argument("The ASSIGNMENT construct is malformed: expected EXPRESSION, got " + m_current_token.getTokenTypeString());
 
-        if (m_current_token.getType() == TokenType::SEMICOLON)
-            advance();
+        leftExpressionNode = parseMathExpression();
 
-        return std::move(std::make_unique<AssignmentNode>(identifier, std::move(std::make_unique<ExpressionNode>(m_current_token.getValue()))));
+        if (m_current_token.getType() != TokenType::SEMICOLON)
+            throw std::invalid_argument("The ASSIGNMENT construct is malformed: expected ;, got " + m_current_token.getTokenTypeString());
+        advance();
+
+        return std::move(std::make_unique<AssignmentNode>(identifier, std::move(leftExpressionNode)));
     }
 
     std::unique_ptr<IfNode> Parser::parseIfStatement()
@@ -107,14 +115,19 @@ namespace WhileParser
     std::unique_ptr<SequenceNode> Parser::parseSequenceStatement()
     {
 
-        auto firstStatement = parseAssignmentStatement();
-
-        auto secondStatement = parseAssignmentStatement();
-        advance();
-
         auto statements = std::vector<std::unique_ptr<StatementNode>>();
-        statements.push_back(std::move(firstStatement));
-        statements.push_back(std::move(secondStatement));
+
+        while (m_current_token.getType() == TokenType::IDENTIFIER)
+        {
+            auto assignmentStatementNode = parseAssignmentStatement();
+
+            statements.push_back(std::move(assignmentStatementNode));
+        }
+
+        // single variable printed
+        if (statements.empty())
+            throw std::invalid_argument("Error in the syntax: " + m_current_token.getValue());
+
         return std::move(std::make_unique<SequenceNode>(std::move(statements)));
     }
 
@@ -167,7 +180,7 @@ namespace WhileParser
             m_current_token.getType() == TokenType::SLASH)
         {
 
-            char mathOperator = m_current_token.getValue().data()[0];
+            auto mathOperator = m_current_token.getValue();
             advance();
 
             auto rightExpressionNode = parseExpression();

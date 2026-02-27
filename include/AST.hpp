@@ -174,9 +174,7 @@ namespace WhileParser
             printIndentation("SequenceNode", indent);
 
             std::for_each(m_statement_list.begin(), m_statement_list.end(), [this, indent](const std::unique_ptr<StatementNode> &statement)
-                          {
-                            printIndentation("SequenceNode", indent + 1);
-                            statement->printNode(indent + 2); });
+                          { statement->printNode(indent + 1); });
         }
 
     private:
@@ -208,7 +206,7 @@ namespace WhileParser
     class MathExpressionNode : public ExpressionNode
     {
     public:
-        MathExpressionNode(char math_operation, std::unique_ptr<ExpressionNode> left_expression,
+        MathExpressionNode(const std::string &math_operation, std::unique_ptr<ExpressionNode> left_expression,
                            std::unique_ptr<ExpressionNode> right_expression) : m_math_operation(math_operation), m_left_expression(std::move(left_expression)),
                                                                                m_right_expression(std::move(right_expression)) {}
 
@@ -216,7 +214,7 @@ namespace WhileParser
         {
             printIndentation("MathExpressionNode", indent);
             printIndentation("MathOp", indent + 1);
-            printIndentation("" + m_math_operation, indent + 2);
+            printIndentation("(" + m_math_operation + ")", indent + 2);
 
             printIndentation("LeftSideExpression", indent + 1);
             m_left_expression->printNode(indent + 2);
@@ -226,7 +224,7 @@ namespace WhileParser
         }
 
     private:
-        char m_math_operation;
+        std::string m_math_operation;
         std::unique_ptr<ExpressionNode> m_left_expression;
         std::unique_ptr<ExpressionNode> m_right_expression;
     };

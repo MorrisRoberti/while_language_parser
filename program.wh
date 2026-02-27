@@ -1,1 +1,1 @@
-if a < and not true then skip else skip endif
+a := a;
