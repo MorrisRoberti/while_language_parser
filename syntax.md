@@ -15,7 +15,7 @@ Pred ::= true
 | false
 | not Pred
 | Pred1 BinaryOp Pred1
-| Statement1 RelationalOp Statement2
+| Expr1 RelationalOp Expr2
 
 MathOp ::= + | − | ∗ | /
 

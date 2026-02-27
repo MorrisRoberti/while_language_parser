@@ -34,14 +34,16 @@ namespace WhileParser
         // Expression parsing
         std::unique_ptr<ExpressionNode> parseExpression();
 
-        std::unique_ptr<MathExpressionNode> parseMathExpression();
+        std::unique_ptr<ExpressionNode> parseMathExpression();
 
         // Predicate parsing
         std::unique_ptr<PredicateNode> parsePredicate();
 
         std::unique_ptr<NotPredicateNode> parseNotPredicate();
-        std::unique_ptr<BooleanPredicateNode> parseBooleanPredicate();
+        std::unique_ptr<PredicateNode> parseBooleanPredicate();
         std::unique_ptr<RelationalPredicateNode> parseRelationalPredicate();
+
+        std::unique_ptr<ASTNode> parseTerminal();
 
         // i encapsulate the check of token validity in here
         void advance();
