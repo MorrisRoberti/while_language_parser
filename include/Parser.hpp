@@ -12,7 +12,7 @@ namespace WhileParser
     class Parser
     {
     public:
-        Parser(const std::string &filename) : m_lexer(filename),
+        Parser(const std::string &filename) : m_lexer(filename, true),
                                               m_current_token(Token(TokenType::END_OF_FILE, "EOF")),
                                               m_parenthesis_count(0)
         {

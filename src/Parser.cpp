@@ -111,7 +111,6 @@ namespace WhileParser
         return std::move(std::make_unique<SkipNode>());
     }
 
-    // TODO
     std::unique_ptr<SequenceNode> Parser::parseSequenceStatement()
     {
 
@@ -151,7 +150,6 @@ namespace WhileParser
             std::move(predicateNode), std::move(statementNode)));
     }
 
-    // TODO
     std::unique_ptr<ExpressionNode> Parser::parseExpression()
     {
 
@@ -290,8 +288,8 @@ namespace WhileParser
 
         auto token = m_lexer.nextToken();
 
-        // skip whitespaces and endlines
-        while (token.getType() == TokenType::WHITESPACE || token.getType() == TokenType::END_OF_LINE)
+        // skip endlines
+        while (token.getType() == TokenType::END_OF_LINE)
             token = m_lexer.nextToken();
 
         if (token.getType() == TokenType::UNKNOWN)

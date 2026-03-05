@@ -38,6 +38,7 @@ namespace WhileParser
         END_OF_FILE,
         END_OF_LINE
     };
+
 }
 
 #endif

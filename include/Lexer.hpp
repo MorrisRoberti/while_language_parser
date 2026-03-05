@@ -17,12 +17,13 @@ namespace WhileParser
     class Lexer
     {
     public:
-        Lexer(const std::string &filename);
+        Lexer(const std::string &filename, bool skip_whitespaces);
         ~Lexer();
 
         Token nextToken();
 
         bool isTokenAvailable();
+        void skipWhitespaces();
 
         Lexer(const Lexer &other) {}
         Lexer(const Lexer &&) {}
@@ -36,8 +37,9 @@ namespace WhileParser
         Token readSymbol(char first);
 
         std::ifstream m_file_stream;
-        bool m_eof;
         std::unordered_map<std::string, TokenType> m_keywords;
+        bool m_skip_whitespaces;
+        bool m_eof;
     };
 }
 
