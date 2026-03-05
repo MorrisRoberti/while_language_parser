@@ -17,13 +17,14 @@ namespace WhileParser
     class Lexer
     {
     public:
-        Lexer(const std::string &filename, bool skip_whitespaces);
+        Lexer(const std::string &filename, bool skip_whitespaces, bool skip_eol);
         ~Lexer();
 
         Token nextToken();
 
         bool isTokenAvailable();
         void skipWhitespaces();
+        void skipEOL();
 
         Lexer(const Lexer &other) {}
         Lexer(const Lexer &&) {}
@@ -39,6 +40,7 @@ namespace WhileParser
         std::ifstream m_file_stream;
         std::unordered_map<std::string, TokenType> m_keywords;
         bool m_skip_whitespaces;
+        bool m_skip_eol;
         bool m_eof;
     };
 }

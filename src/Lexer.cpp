@@ -3,7 +3,7 @@
 
 namespace WhileParser
 {
-    Lexer::Lexer(const std::string &filename, bool skip_whitespaces = false)
+    Lexer::Lexer(const std::string &filename, bool skip_whitespaces = false, bool skip_eol = false)
     {
 
         if (filename.size() < 4 || filename.substr(filename.size() - 3, 3) != ".wh")
@@ -20,6 +20,7 @@ namespace WhileParser
 
         m_eof = false;
         m_skip_whitespaces = skip_whitespaces;
+        m_skip_eol = skip_eol;
 
         m_keywords = std::unordered_map<std::string, TokenType>{
             {"skip", TokenType::SKIP},
@@ -120,7 +121,7 @@ namespace WhileParser
         if (auto it = m_keywords.find(word); it != m_keywords.end())
         {
             // skips whitespaces
-            if (word == " " && m_skip_whitespaces)
+            if ((word == " " && m_skip_whitespaces) || (word == "\n" && m_skip_eol))
                 return nextToken();
 
             return {it->second, std::move(word)};
@@ -159,4 +160,8 @@ namespace WhileParser
         m_skip_whitespaces = true;
     }
 
+    void Lexer::skipEOL()
+    {
+        m_skip_eol = true;
+    }
 }
