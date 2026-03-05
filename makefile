@@ -39,3 +39,4 @@ $(PARSER_TARGET_TEST): $(PARSER_SRC_TEST)
 .PHONY: clean
 clean:
 	rm -rf $(BIN)/*
+	rm -rf $(TEST_BIN)/*

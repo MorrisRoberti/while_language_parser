@@ -1,5 +1,7 @@
 #include "../include/Lexer.hpp"
 #include <iostream>
+#include <memory>
+#include <sstream>
 
 int main()
 {
@@ -8,7 +10,10 @@ int main()
 
         std::cout << "Tokenizing..." << std::endl;
 
-        WhileParser::Lexer lexer("/home/morris/Workspace/while_parser/program.wh", false, false);
+        auto stream = std::make_unique<std::istringstream>("x := 10; ");
+
+        WhileParser::Lexer lexer(std::move(stream), true, true);
+        // WhileParser::Lexer lexer("/home/morris/Workspace/while_parser/program.wh", true, true);
 
         while (lexer.isTokenAvailable())
         {

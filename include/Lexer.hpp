@@ -5,6 +5,7 @@
 #include "./TokenType.hpp"
 
 #include <iostream>
+#include <memory>
 #include <algorithm>
 #include <stdexcept>
 #include <map>
@@ -18,7 +19,11 @@ namespace WhileParser
     {
     public:
         Lexer(const std::string &filename, bool skip_whitespaces, bool skip_eol);
-        ~Lexer();
+        Lexer(std::unique_ptr<std::istream> raw_code, bool skip_whitespaces, bool skip_eol)
+        {
+            init(std::move(raw_code), skip_whitespaces, skip_eol);
+        }
+        ~Lexer() = default;
 
         Token nextToken();
 
@@ -37,7 +42,9 @@ namespace WhileParser
         Token readNumber(char first);
         Token readSymbol(char first);
 
-        std::ifstream m_file_stream;
+        void init(std::unique_ptr<std::istream> source, bool skip_whitespaces, bool skip_eol);
+
+        std::unique_ptr<std::istream> m_stream;
         std::unordered_map<std::string, TokenType> m_keywords;
         bool m_skip_whitespaces;
         bool m_skip_eol;

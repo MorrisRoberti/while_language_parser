@@ -3,24 +3,8 @@
 
 namespace WhileParser
 {
-    Lexer::Lexer(const std::string &filename, bool skip_whitespaces = false, bool skip_eol = false)
+    void Lexer::init(std::unique_ptr<std::istream> source, bool skip_whitespaces, bool skip_eol)
     {
-
-        if (filename.size() < 4 || filename.substr(filename.size() - 3, 3) != ".wh")
-        {
-            throw std::invalid_argument("The filename has to be at least 1 charachter and has to have extension .wh");
-        }
-
-        m_file_stream.open(filename, std::ios_base::in);
-
-        if (!m_file_stream.is_open())
-        {
-            throw std::runtime_error("Impossible to open the file");
-        }
-
-        m_eof = false;
-        m_skip_whitespaces = skip_whitespaces;
-        m_skip_eol = skip_eol;
 
         m_keywords = std::unordered_map<std::string, TokenType>{
             {"skip", TokenType::SKIP},
@@ -51,12 +35,31 @@ namespace WhileParser
             {")", TokenType::RPAREN},
             {"*", TokenType::WILDCARD},
             {"/", TokenType::SLASH}};
+
+        m_eof = false;
+        m_skip_whitespaces = skip_whitespaces;
+        m_skip_eol = skip_eol;
+
+        // initializing my stream with the correct stream
+        m_stream = std::move(source);
     }
 
-    Lexer::~Lexer()
+    Lexer::Lexer(const std::string &filename, bool skip_whitespaces = false, bool skip_eol = false)
     {
-        if (m_file_stream.is_open())
-            m_file_stream.close();
+
+        if (filename.size() < 4 || filename.substr(filename.size() - 3, 3) != ".wh")
+        {
+            throw std::invalid_argument("The filename has to be at least 1 charachter and has to have extension .wh");
+        }
+
+        auto file = std::make_unique<std::ifstream>(filename);
+
+        if (!file->is_open())
+        {
+            throw std::runtime_error("Impossible to open the file");
+        }
+
+        init(std::move(file), skip_whitespaces, skip_eol);
     }
 
     bool Lexer::isIdChar(char c) const
@@ -68,9 +71,9 @@ namespace WhileParser
     {
         std::string word(1, first);
 
-        while (m_file_stream.peek() != EOF && isIdChar(m_file_stream.peek()))
+        while (m_stream->peek() != EOF && isIdChar(m_stream->peek()))
         {
-            word += static_cast<char>(m_file_stream.get());
+            word += static_cast<char>(m_stream->get());
         }
 
         // found a keyword
@@ -91,14 +94,14 @@ namespace WhileParser
     Token Lexer::readNumber(char first)
     {
         std::string word(1, first);
-        while (std::isdigit(m_file_stream.peek()))
+        while (std::isdigit(m_stream->peek()))
         {
-            word += static_cast<char>(m_file_stream.get());
+            word += static_cast<char>(m_stream->get());
         }
 
-        if (std::isalpha(m_file_stream.peek()))
+        if (std::isalpha(m_stream->peek()))
         {
-            word += static_cast<char>(m_file_stream.get());
+            word += static_cast<char>(m_stream->get());
             throw std::runtime_error("Invalid identifier: " + word);
         }
 
@@ -107,15 +110,17 @@ namespace WhileParser
 
     Token Lexer::readSymbol(char first)
     {
+
         std::string word(1, first);
 
-        const std::string compound_symbol = {first, static_cast<char>(m_file_stream.peek())};
+        const std::string compound_symbol = {first, static_cast<char>(m_stream->peek())};
         // check for compound symbols :=, >=, <=.
         // if the next symbol is a whitespace or in general not a = the instruction below will return 0
         // so we know we're analyzing a single-character symbol
+
         if (m_keywords.count(compound_symbol))
         {
-            word += static_cast<char>(m_file_stream.get());
+            word += static_cast<char>(m_stream->get());
         }
 
         if (auto it = m_keywords.find(word); it != m_keywords.end())
@@ -135,7 +140,7 @@ namespace WhileParser
 
         char c;
         // empty file
-        if (!m_file_stream.get(c))
+        if (!m_stream->get(c))
         {
             m_eof = true;
             return {TokenType::END_OF_FILE, "EOF"};
