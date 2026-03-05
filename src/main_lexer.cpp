@@ -8,7 +8,7 @@ int main()
 
         std::cout << "Tokenizing..." << std::endl;
 
-        WhileParser::Lexer lexer("/home/morris/Workspace/while_parser/program.wh", true, true);
+        WhileParser::Lexer lexer("/home/morris/Workspace/while_parser/program.wh", false, false);
 
         while (lexer.isTokenAvailable())
         {
