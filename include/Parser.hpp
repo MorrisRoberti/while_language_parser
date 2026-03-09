@@ -28,7 +28,7 @@ namespace WhileParser
         std::unique_ptr<AssignmentNode> parseAssignmentStatement();
         std::unique_ptr<IfNode> parseIfStatement();
         std::unique_ptr<SkipNode> parseSkipStatement();
-        std::unique_ptr<SequenceNode> parseSequenceStatement();
+        std::unique_ptr<StatementNode> parseSequenceStatement();
         std::unique_ptr<WhileNode> parseWhileStatement();
 
         // Expression parsing

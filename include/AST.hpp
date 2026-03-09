@@ -71,6 +71,8 @@ namespace WhileParser
     {
     public:
         virtual void printNode(int indent = 0) const = 0;
+
+        StatementNode() = default;
     };
 
     class PredicateNode : public ASTNode

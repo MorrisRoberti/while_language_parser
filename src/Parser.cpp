@@ -111,7 +111,7 @@ namespace WhileParser
         return std::move(std::make_unique<SkipNode>());
     }
 
-    std::unique_ptr<SequenceNode> Parser::parseSequenceStatement()
+    std::unique_ptr<StatementNode> Parser::parseSequenceStatement()
     {
 
         auto statements = std::vector<std::unique_ptr<StatementNode>>();
@@ -126,6 +126,9 @@ namespace WhileParser
         // single variable printed
         if (statements.empty())
             throw std::invalid_argument("Error in the syntax: " + m_current_token.getValue());
+
+        if (statements.size() == 1)
+            return std::move(statements.at(0));
 
         return std::move(std::make_unique<SequenceNode>(std::move(statements)));
     }
@@ -189,7 +192,6 @@ namespace WhileParser
         return std::move(leftExpressionNode);
     }
 
-    // TODO
     std::unique_ptr<PredicateNode> Parser::parsePredicate()
     {
 
