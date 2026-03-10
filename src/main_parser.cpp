@@ -1,6 +1,5 @@
-// #include "../include/Parser.hpp"
+#include "../include/Parser.hpp"
 #include <iostream>
-#include "./ParserrX.cpp"
 
 int main()
 {
@@ -9,7 +8,7 @@ int main()
 
         std::cout << "Parsing..." << std::endl;
 
-        WhileParser::ParserrX parser("/home/morris/Workspace/while_parser/program.wh");
+        WhileParser::Parser parser("/home/morris/Workspace/while_parser/program.wh");
 
         auto root = parser.parse();
 

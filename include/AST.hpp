@@ -96,24 +96,6 @@ namespace WhileParser
         std::string m_terminal_predicate;
     };
 
-    class MathOpNode : public ASTNode
-    {
-    public:
-        virtual void printNode(int indent = 0) const = 0;
-    };
-
-    class BooleanOpNode : public ASTNode
-    {
-    public:
-        virtual void printNode(int indent = 0) const = 0;
-    };
-
-    class RelationalOpNode : public ASTNode
-    {
-    public:
-        virtual void printNode(int indent = 0) const = 0;
-    };
-
     // Statement productions
     class AssignmentNode : public StatementNode
     {
@@ -169,23 +151,6 @@ namespace WhileParser
         {
             printIndentation("SkipNode", indent);
         }
-    };
-
-    class SequenceNode : public StatementNode
-    {
-    public:
-        SequenceNode(std::vector<std::unique_ptr<StatementNode>> statement_list) : m_statement_list(std::move(statement_list)) {}
-
-        inline void printNode(int indent = 0) const override
-        {
-            printIndentation("SequenceNode", indent);
-
-            std::for_each(m_statement_list.begin(), m_statement_list.end(), [this, indent](const std::unique_ptr<StatementNode> &statement)
-                          { statement->printNode(indent + 1); });
-        }
-
-    private:
-        std::vector<std::unique_ptr<StatementNode>> m_statement_list;
     };
 
     class WhileNode : public StatementNode
