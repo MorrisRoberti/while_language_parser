@@ -31,7 +31,7 @@ namespace WhileParser
 
         // Expression parsing
         std::unique_ptr<MathExpressionNode> parseExpression();
-
+        std::unique_ptr<ExpressionNode> parsePrimaryExpression();
         std::unique_ptr<MathExpressionNode> parseMulDivExpression();
 
         // Predicate parsing

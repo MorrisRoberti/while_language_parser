@@ -165,7 +165,7 @@ namespace WhileParser
 
         auto mulDivExpr = std::make_unique<MathExpressionNode>(parseMulDivExpression());
 
-        if (m_current_token.getType() == TokenType::PLUS || m_current_token.getType() == TokenType::MINUS)
+        while (m_current_token.getType() == TokenType::PLUS || m_current_token.getType() == TokenType::MINUS)
         {
             auto op = m_current_token;
             advance();
@@ -177,22 +177,41 @@ namespace WhileParser
 
     std::unique_ptr<MathExpressionNode> Parser::parseMulDivExpression()
     {
-        if (m_current_token.getType() == TokenType::IDENTIFIER || m_current_token.getType() == TokenType::NUMBER)
+
+        auto leftExpression = parsePrimaryExpression();
+
+        if (m_current_token.getType() == TokenType::WILDCARD || m_current_token.getType() == TokenType::SLASH)
         {
-            auto leftExpression = std::make_unique<ExpressionNode>(m_current_token.getValue());
+            auto op = m_current_token.getValue();
             advance();
-
-            if (m_current_token.getType() == TokenType::WILDCARD || m_current_token.getType() == TokenType::SLASH)
-            {
-                auto op = m_current_token.getValue();
-                advance();
-                return std::make_unique<MathExpressionNode>(op, std::move(leftExpression), parseMulDivExpression());
-            }
-
-            return std::move(std::make_unique<MathExpressionNode>(std::move(leftExpression)));
+            return std::make_unique<MathExpressionNode>(op, std::move(leftExpression), parseMulDivExpression());
         }
 
-        throw std::invalid_argument("The MathExpression construct is malformed: expected IDENTIFIER/NUMBER, got " + m_current_token.getTokenTypeString());
+        return std::move(std::make_unique<MathExpressionNode>(std::move(leftExpression)));
+    }
+
+    std::unique_ptr<ExpressionNode> Parser::parsePrimaryExpression()
+    {
+
+        if (m_current_token.getType() == TokenType::LPAREN)
+        {
+            advance();
+            auto expressionNode = parseExpression();
+            if (m_current_token.getType() != TokenType::RPAREN)
+                throw std::invalid_argument("The PARENTHESIS construct is malformed: expected ), got " + m_current_token.getTokenTypeString());
+            advance();
+            return std::move(expressionNode);
+        }
+
+        if (m_current_token.getType() == TokenType::IDENTIFIER || m_current_token.getType() == TokenType::NUMBER)
+        {
+
+            auto token = m_current_token;
+            advance();
+            return std::move(std::make_unique<ExpressionNode>(token.getValue()));
+        }
+
+        throw std::invalid_argument("The EXPRESSION is malformed: expected IDENTIFIER/NUMBER, got " + m_current_token.getTokenTypeString());
     }
 
     std::unique_ptr<RelationalPredicateNode> Parser::parseRelationalPredicate()

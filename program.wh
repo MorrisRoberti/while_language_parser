@@ -1,3 +1,1 @@
-while not not true do
-x := x-1 * 5 + 2;
-endwhile
+x := 10 + 2 * e - 2;
