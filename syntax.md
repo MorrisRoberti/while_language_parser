@@ -1,27 +1,27 @@
 # WHILE Language Syntax
 
 ```
-Statement ::= x := Expr
-| skip
-| Statement1; Statement2
-| if Pred then Statement1 else Statement2 endif
-| while Pred do Statement endwhile
+Statement ::=  TS Statement'
+            | skip
+            | if Pred then Statement1 else Statement2 endif 
+            | while Pred do Statement endwhile
+TS ::=  x := Expr;
+Statement' ::= Statement* | eps
 
-Expr ::= x
-| n
-| Expr1 MathOp Expr2
+Expr ::= T (MathOp2 T)*
+T ::= F (MathOp1 F)*
+F ::= (Expr) | x | n
 
-Pred ::= true
-| false
-| not Pred
-| Pred1 BinaryOp Pred1
-| Expr1 RelationalOp Expr2
+Pred ::= TP BooleanPred 
+       | not Pred 
+       | Expr1 RelationalOp Expr2
+TP ::= true | false 
+BooleanPred ::= BooleanOp Pred | eps 
 
-MathOp ::= + | − | ∗ | /
+MathOp2 ::= + | − 
+MathOp1 ::= ∗ | /
 
 BooleanOp ::= and | or
 
 RelationalOp ::= < | ≤ | = | > | ≥
-
-Parenthesis ::= ( | )
 ```

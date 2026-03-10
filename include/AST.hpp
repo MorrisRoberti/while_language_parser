@@ -87,6 +87,11 @@ namespace WhileParser
             printIndentation(m_terminal_predicate, indent + 2);
         }
 
+        inline void setPredicate(const std::string &s)
+        {
+            m_terminal_predicate = s;
+        }
+
     private:
         std::string m_terminal_predicate;
     };
@@ -208,13 +213,24 @@ namespace WhileParser
     class MathExpressionNode : public ExpressionNode
     {
     public:
+        MathExpressionNode(std::unique_ptr<ExpressionNode> expression) : m_math_operation(), m_left_expression(std::move(expression)),
+                                                                         m_right_expression(nullptr) {}
+
         MathExpressionNode(const std::string &math_operation, std::unique_ptr<ExpressionNode> left_expression,
                            std::unique_ptr<ExpressionNode> right_expression) : m_math_operation(math_operation), m_left_expression(std::move(left_expression)),
                                                                                m_right_expression(std::move(right_expression)) {}
 
         inline void printNode(int indent = 0) const override
         {
+
+            if (m_math_operation.empty() || !m_right_expression)
+            {
+
+                m_left_expression->printNode(indent);
+                return;
+            }
             printIndentation("MathExpressionNode", indent);
+
             printIndentation("MathOp", indent + 1);
             printIndentation("(" + m_math_operation + ")", indent + 2);
 
@@ -277,12 +293,24 @@ namespace WhileParser
     class RelationalPredicateNode : public PredicateNode
     {
     public:
+        RelationalPredicateNode(std::unique_ptr<ExpressionNode> expression) : m_relational_operation(), m_left_expression(std::move(expression)),
+                                                                              m_right_expression(nullptr) {}
+
         RelationalPredicateNode(const std::string &relational_operation, std::unique_ptr<ExpressionNode> left_expression,
                                 std::unique_ptr<ExpressionNode> right_expression) : m_relational_operation(relational_operation), m_left_expression(std::move(left_expression)),
-                                                                                    m_right_expression(std::move(right_expression)) {}
+                                                                                    m_right_expression(std::move(right_expression))
+        {
+        }
 
         inline void printNode(int indent = 0) const override
         {
+
+            if (m_relational_operation.empty() || !m_right_expression)
+            {
+                printIndentation("Expression", indent);
+                m_left_expression->printNode(indent + 1);
+                return;
+            }
             printIndentation("RelationalPredicateNode", indent);
 
             printIndentation("RelationalOp", indent + 1);
@@ -300,6 +328,5 @@ namespace WhileParser
         std::unique_ptr<ExpressionNode> m_left_expression;
         std::unique_ptr<ExpressionNode> m_right_expression;
     };
-
 }
 #endif

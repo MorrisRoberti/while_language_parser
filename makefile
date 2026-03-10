@@ -1,6 +1,6 @@
 # sources
 LEXER_SRC = ./src/Lexer.cpp ./src/main_lexer.cpp
-PARSER_SRC = ./src/Lexer.cpp ./src/Parser.cpp ./src/main_parser.cpp
+PARSER_SRC = ./src/Lexer.cpp ./src/ParserrX.cpp ./src/main_parser.cpp
 
 PARSER_SRC_TEST = ./src/Lexer.cpp ./src/Parser.cpp ./tests/test_parser.cpp
 LEXER_SRC_TEST = ./src/Lexer.cpp ./tests/test_lexer.cpp
