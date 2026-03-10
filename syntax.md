@@ -1,27 +1,34 @@
 # WHILE Language Syntax
 
 ```
-Statement ::=  TS Statement'
-            | skip
-            | if Pred then Statement1 else Statement2 endif 
-            | while Pred do Statement endwhile
-TS ::=  x := Expr;
-Statement' ::= Statement* | eps
+Program      ::= Statement*
 
-Expr ::= T (MathOp2 T)*
-T ::= F (MathOp1 F)*
-F ::= (Expr) | x | n
+Statement    ::= Assignment | Skip | IfStmt | WhileStmt
 
-Pred ::= TP BooleanPred 
-       | not Pred 
-       | Expr1 RelationalOp Expr2
-TP ::= true | false 
-BooleanPred ::= BooleanOp Pred | eps 
+Assignment   ::= identifier ':=' Expr ';'
+Skip         ::= 'skip'
+IfStmt       ::= 'if' Pred 'then' Statement 'else' Statement 'endif'
+WhileStmt    ::= 'while' Pred 'do' Statement 'endwhile'
 
-MathOp2 ::= + | − 
-MathOp1 ::= ∗ | /
+Pred         ::= AndPred ( 'or' AndPred )*
+AndPred      ::= UnaryPred ( 'and' UnaryPred )*
+UnaryPred    ::= 'not' UnaryPred 
+               | PrimaryPred
 
-BooleanOp ::= and | or
+PrimaryPred  ::= 'true' 
+               | 'false' 
+               | '(' Pred ')' 
+               | Relational
 
-RelationalOp ::= < | ≤ | = | > | ≥
+Relational   ::= Expr RelOp Expr
+RelOp        ::= '<' | '<=' | '=' | '>' | '>='
+
+Expr         ::= Term ( AddOp Term )*
+Term         ::= Factor ( MulOp Factor )*
+Factor       ::= '(' Expr ')' 
+               | identifier 
+               | number
+
+AddOp        ::= '+' | '-'
+MulOp        ::= '*' | '/'
 ```

@@ -30,19 +30,22 @@ namespace WhileParser
         std::unique_ptr<WhileNode> parseWhileStatement();
 
         // Expression parsing
-        std::unique_ptr<MathExpressionNode> parseExpression();
+        std::unique_ptr<ExpressionNode> parseExpression();
         std::unique_ptr<ExpressionNode> parsePrimaryExpression();
-        std::unique_ptr<MathExpressionNode> parseMulDivExpression();
+        std::unique_ptr<ExpressionNode> parseMulDivExpression();
 
         // Predicate parsing
         std::unique_ptr<PredicateNode> parsePredicate();
+        std::unique_ptr<PredicateNode> parseAndPredicate();
+        std::unique_ptr<PredicateNode> parseUnaryPredicate();
+        std::unique_ptr<PredicateNode> parsePrimaryPredicate();
 
-        std::unique_ptr<NotPredicateNode> parseNotPredicate();
         std::unique_ptr<PredicateNode> parseBooleanPredicate();
         std::unique_ptr<RelationalPredicateNode> parseRelationalPredicate();
 
         // i encapsulate the check of token validity in here
         void advance();
+        Token consume(TokenType expected, const std::string &errorMessage);
 
         Lexer m_lexer;
         Token m_current_token; // lookahead (1)

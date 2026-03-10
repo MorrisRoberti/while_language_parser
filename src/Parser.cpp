@@ -57,24 +57,16 @@ namespace WhileParser
     {
         std::unique_ptr<ExpressionNode> leftExpressionNode = nullptr;
 
-        if (m_current_token.getType() != TokenType::IDENTIFIER)
-            throw std::invalid_argument("The ASSIGNMENT construct is malformed: expected IDENTIFIER, got " + m_current_token.getTokenTypeString());
+        auto identifier = consume(TokenType::IDENTIFIER, "Expected IDENTIFIER").getValue();
 
-        auto identifier = m_current_token.getValue();
-        advance();
-
-        if (m_current_token.getType() != TokenType::ASSIGN)
-            throw std::invalid_argument("The ASSIGNMENT construct is malformed: expected :=, got " + m_current_token.getTokenTypeString());
-        advance();
+        consume(TokenType::ASSIGN, "Expected ASSIGN");
 
         if (m_current_token.getType() != TokenType::IDENTIFIER && m_current_token.getType() != TokenType::NUMBER)
             throw std::invalid_argument("The ASSIGNMENT construct is malformed: expected EXPRESSION, got " + m_current_token.getTokenTypeString());
 
         leftExpressionNode = parseExpression();
 
-        if (m_current_token.getType() != TokenType::SEMICOLON)
-            throw std::invalid_argument("The ASSIGNMENT construct is malformed: expected ;, got " + m_current_token.getTokenTypeString());
-        advance();
+        consume(TokenType::SEMICOLON, "Expected SEMICOLON");
 
         return std::move(std::make_unique<AssignmentNode>(identifier, std::move(leftExpressionNode)));
     }
@@ -84,21 +76,15 @@ namespace WhileParser
 
         auto predicateNode = parsePredicate();
 
-        if (m_current_token.getType() != TokenType::THEN)
-            throw std::invalid_argument("The IF construct is malformed: expected THEN, got " + m_current_token.getTokenTypeString());
-        advance();
+        consume(TokenType::THEN, "Expected THEN");
 
         auto thenStatementNode = parseStatement();
 
-        if (m_current_token.getType() != TokenType::ELSE)
-            throw std::invalid_argument("The IF construct is malformed: expected ELSE, got " + m_current_token.getTokenTypeString());
-        advance();
+        consume(TokenType::ELSE, "Expected ELSE");
 
         auto elseStatementNode = parseStatement();
 
-        if (m_current_token.getType() != TokenType::ENDIF)
-            throw std::invalid_argument("The IF construct is malformed: expected ENDIF, got " + m_current_token.getTokenTypeString());
-        advance();
+        consume(TokenType::ENDIF, "Expected ENDIF");
 
         return std::move(std::make_unique<IfNode>(std::move(predicateNode),
                                                   std::move(thenStatementNode), std::move(elseStatementNode)));
@@ -109,35 +95,14 @@ namespace WhileParser
 
         auto predicateNode = parsePredicate();
 
-        if (m_current_token.getType() != TokenType::DO)
-            throw std::invalid_argument("The WHILE construct is malformed: expected DO, got " + m_current_token.getTokenTypeString());
-        advance();
+        consume(TokenType::DO, "Expected DO");
 
         auto statementNode = parseStatement();
 
-        if (m_current_token.getType() != TokenType::ENDWHILE)
-            throw std::invalid_argument("The WHILE construct is malformed: expected ENDWHILE, got " + m_current_token.getTokenTypeString());
-        advance();
+        consume(TokenType::ENDWHILE, "Expected ENDWHILE");
 
         return std::move(std::make_unique<WhileNode>(
             std::move(predicateNode), std::move(statementNode)));
-    }
-
-    std::unique_ptr<PredicateNode> Parser::parsePredicate()
-    {
-        if (m_current_token.getType() == TokenType::TRUE || m_current_token.getType() == TokenType::FALSE)
-            return parseBooleanPredicate();
-
-        if (m_current_token.getType() == TokenType::NOT)
-            return parseNotPredicate();
-
-        return parseRelationalPredicate();
-    }
-
-    std::unique_ptr<NotPredicateNode> Parser::parseNotPredicate()
-    {
-        advance();
-        return std::move(std::make_unique<NotPredicateNode>(parsePredicate()));
     }
 
     std::unique_ptr<PredicateNode> Parser::parseBooleanPredicate()
@@ -160,34 +125,36 @@ namespace WhileParser
         return std::move(leftPredicate);
     }
 
-    std::unique_ptr<MathExpressionNode> Parser::parseExpression()
+    std::unique_ptr<ExpressionNode> Parser::parseExpression()
     {
 
-        auto mulDivExpr = std::make_unique<MathExpressionNode>(parseMulDivExpression());
+        auto leftMulDivExpression = parseMulDivExpression();
 
         while (m_current_token.getType() == TokenType::PLUS || m_current_token.getType() == TokenType::MINUS)
         {
             auto op = m_current_token;
             advance();
-            return std::move(std::make_unique<MathExpressionNode>(op.getValue(), std::move(mulDivExpr), parseExpression()));
+            auto rightMulDivExpression = parseMulDivExpression();
+            leftMulDivExpression = std::make_unique<MathExpressionNode>(op.getValue(), std::move(leftMulDivExpression), std::move(rightMulDivExpression));
         }
 
-        return std::move(std::make_unique<MathExpressionNode>(std::move(mulDivExpr)));
+        return std::move(leftMulDivExpression);
     }
 
-    std::unique_ptr<MathExpressionNode> Parser::parseMulDivExpression()
+    std::unique_ptr<ExpressionNode> Parser::parseMulDivExpression()
     {
 
         auto leftExpression = parsePrimaryExpression();
 
-        if (m_current_token.getType() == TokenType::WILDCARD || m_current_token.getType() == TokenType::SLASH)
+        while (m_current_token.getType() == TokenType::WILDCARD || m_current_token.getType() == TokenType::SLASH)
         {
             auto op = m_current_token.getValue();
             advance();
-            return std::make_unique<MathExpressionNode>(op, std::move(leftExpression), parseMulDivExpression());
+            auto rightExpression = parsePrimaryExpression();
+            leftExpression = std::make_unique<MathExpressionNode>(op, std::move(leftExpression), std::move(rightExpression));
         }
 
-        return std::move(std::make_unique<MathExpressionNode>(std::move(leftExpression)));
+        return std::move(leftExpression);
     }
 
     std::unique_ptr<ExpressionNode> Parser::parsePrimaryExpression()
@@ -197,9 +164,7 @@ namespace WhileParser
         {
             advance();
             auto expressionNode = parseExpression();
-            if (m_current_token.getType() != TokenType::RPAREN)
-                throw std::invalid_argument("The PARENTHESIS construct is malformed: expected ), got " + m_current_token.getTokenTypeString());
-            advance();
+            consume(TokenType::RPAREN, "Expected RPAREN");
             return std::move(expressionNode);
         }
 
@@ -216,7 +181,7 @@ namespace WhileParser
 
     std::unique_ptr<RelationalPredicateNode> Parser::parseRelationalPredicate()
     {
-        auto leftExpression = std::make_unique<MathExpressionNode>(parseExpression());
+        auto leftExpression = parseExpression();
 
         if (m_current_token.getType() == TokenType::GTE ||
             m_current_token.getType() == TokenType::GT ||
@@ -224,14 +189,71 @@ namespace WhileParser
             m_current_token.getType() == TokenType::LT ||
             m_current_token.getType() == TokenType::LTE)
         {
-
             auto op = m_current_token.getValue();
             advance();
-
-            return std::move(std::make_unique<RelationalPredicateNode>(op, std::move(leftExpression), parseExpression()));
+            auto rightExpression = parseExpression();
+            return std::make_unique<RelationalPredicateNode>(op, std::move(leftExpression), std::move(rightExpression));
         }
 
-        return std::move(std::make_unique<RelationalPredicateNode>(std::move(leftExpression)));
+        throw std::invalid_argument("Expected relational operator after expression, got: " + m_current_token.getValue());
+    }
+
+    std::unique_ptr<PredicateNode> Parser::parsePredicate()
+    {
+        auto leftNode = parseAndPredicate();
+
+        while (m_current_token.getType() == TokenType::OR)
+        {
+            auto op = m_current_token.getValue();
+            advance();
+            auto rightNode = parseAndPredicate();
+            leftNode = std::make_unique<BooleanPredicateNode>(op, std::move(leftNode), std::move(rightNode));
+        }
+        return leftNode;
+    }
+
+    std::unique_ptr<PredicateNode> Parser::parseAndPredicate()
+    {
+        auto leftNode = parseUnaryPredicate();
+
+        while (m_current_token.getType() == TokenType::AND)
+        {
+            auto op = m_current_token.getValue();
+            advance();
+            auto rightNode = parseUnaryPredicate();
+            leftNode = std::make_unique<BooleanPredicateNode>(op, std::move(leftNode), std::move(rightNode));
+        }
+        return leftNode;
+    }
+
+    std::unique_ptr<PredicateNode> Parser::parseUnaryPredicate()
+    {
+        if (m_current_token.getType() == TokenType::NOT)
+        {
+            advance();
+            return std::make_unique<NotPredicateNode>(parseUnaryPredicate());
+        }
+        return parsePrimaryPredicate();
+    }
+
+    std::unique_ptr<PredicateNode> Parser::parsePrimaryPredicate()
+    {
+        if (m_current_token.getType() == TokenType::TRUE || m_current_token.getType() == TokenType::FALSE)
+        {
+            auto val = m_current_token.getValue();
+            advance();
+            return std::make_unique<PredicateNode>(val);
+        }
+
+        if (m_current_token.getType() == TokenType::LPAREN)
+        {
+            advance();
+            auto node = parsePredicate();
+            consume(TokenType::RPAREN, "Expected ')' after boolean expression");
+            return node;
+        }
+
+        return parseRelationalPredicate();
     }
 
     void Parser::advance()
@@ -249,4 +271,13 @@ namespace WhileParser
         m_current_token = token;
     }
 
+    Token Parser::consume(TokenType expected, const std::string &errorMessage)
+    {
+        if (m_current_token.getType() != expected)
+            throw std::invalid_argument(errorMessage + " Got: " + m_current_token.getTokenTypeString());
+
+        auto token = m_current_token;
+        advance();
+        return token;
+    }
 }

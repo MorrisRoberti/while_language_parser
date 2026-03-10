@@ -1,1 +1,4 @@
-x := 10 + 2 * e - 2;
+x := a;
+while false or x + 1 = 4 do
+x:= 1 - x;
+endwhile
