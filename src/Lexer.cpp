@@ -85,7 +85,7 @@ namespace WhileParser
         // check identifier validity
         if (std::isdigit(word[0]))
         {
-            throw std::runtime_error("Invalid identifier: " + word);
+            return {TokenType::UNKNOWN, word};
         }
 
         return {TokenType::IDENTIFIER, std::move(word)};
@@ -102,7 +102,7 @@ namespace WhileParser
         if (std::isalpha(m_stream->peek()))
         {
             word += static_cast<char>(m_stream->get());
-            throw std::runtime_error("Invalid identifier: " + word);
+            return {TokenType::UNKNOWN, word};
         }
 
         return {TokenType::NUMBER, std::move(word)};
