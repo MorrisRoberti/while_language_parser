@@ -6,13 +6,15 @@
 #include <algorithm>
 #include <vector>
 #include <string>
+#include <typeinfo>
 
 namespace WhileParser
 {
     class ASTNode
     {
     public:
-        virtual void printNode(int indent = 0) const = 0;
+        inline virtual void printNode(int indent = 0) const = 0;
+        inline virtual bool isEqual(ASTNode *other) const = 0;
         inline void printIndentation(const std::string &print_string, int indent) const
         {
             for (int i = 0; i < indent; ++i)
@@ -32,6 +34,19 @@ namespace WhileParser
     {
     public:
         RootNode() : m_children(std::vector<std::unique_ptr<ASTNode>>{}) {}
+
+        inline bool isEqual(ASTNode *other) const override
+        {
+            auto other_root = dynamic_cast<RootNode *>(other);
+            if (other_root == nullptr)
+                return false;
+
+            bool equal = true;
+            std::for_each(m_children.begin(), m_children.end(), [this, &equal, other_root, idx = 0](const std::unique_ptr<ASTNode> &child)
+                          { equal = equal && child.get()->isEqual(other_root->m_children.at(idx).get()); });
+
+            return equal;
+        }
 
         inline void printNode(int indent = 0) const override
         {
@@ -57,6 +72,15 @@ namespace WhileParser
         ExpressionNode() = default;
         ExpressionNode(const std::string &terminal_expression) : m_terminal_expression(terminal_expression) {}
 
+        inline bool isEqual(ASTNode *other) const override
+        {
+            auto other_expr = dynamic_cast<ExpressionNode *>(other);
+            if (other_expr == nullptr)
+                return false;
+
+            return m_terminal_expression == other_expr->m_terminal_expression;
+        }
+
         inline void printNode(int indent = 0) const override
         {
             printIndentation("ExpressionNode", indent);
@@ -70,7 +94,8 @@ namespace WhileParser
     class StatementNode : public ASTNode
     {
     public:
-        virtual void printNode(int indent = 0) const = 0;
+        virtual inline bool isEqual(ASTNode *other) const = 0;
+        virtual inline void printNode(int indent = 0) const = 0;
 
         StatementNode() = default;
     };
@@ -80,6 +105,15 @@ namespace WhileParser
     public:
         PredicateNode() = default;
         PredicateNode(const std::string &terminal_predicate) : m_terminal_predicate(terminal_predicate) {}
+
+        virtual bool isEqual(ASTNode *other) const override
+        {
+            auto other_pred = dynamic_cast<PredicateNode *>(other);
+            if (other_pred == nullptr)
+                return false;
+
+            return m_terminal_predicate == other_pred->m_terminal_predicate;
+        }
 
         virtual void printNode(int indent = 0) const override
         {
@@ -103,6 +137,15 @@ namespace WhileParser
         AssignmentNode(const std::string &var_name, std::unique_ptr<ExpressionNode> expr)
             : m_variable_name(var_name), m_expression(std::move(expr)) {}
 
+        inline bool isEqual(ASTNode *other) const override
+        {
+            auto other_assign = dynamic_cast<AssignmentNode *>(other);
+            if (other_assign == nullptr)
+                return false;
+
+            return m_variable_name == other_assign->m_variable_name && m_expression->isEqual(other_assign->m_expression.get());
+        }
+
         inline void printNode(int indent = 0) const override
         {
             printIndentation("AssignmentNode", indent);
@@ -122,6 +165,17 @@ namespace WhileParser
     public:
         IfNode(std::unique_ptr<PredicateNode> condition, std::unique_ptr<StatementNode> then_statement, std::unique_ptr<StatementNode> else_statement)
             : m_condition(std::move(condition)), m_then_branch(std::move(then_statement)), m_else_branch(std::move(else_statement)) {}
+
+        inline bool isEqual(ASTNode *other) const override
+        {
+            auto other_if = dynamic_cast<IfNode *>(other);
+            if (other_if == nullptr)
+                return false;
+
+            return m_condition->isEqual(other_if->m_condition.get()) &&
+                   m_then_branch->isEqual(other_if->m_then_branch.get()) &&
+                   m_else_branch->isEqual(other_if->m_else_branch.get());
+        }
 
         inline void printNode(int indent = 0) const override
         {
@@ -147,6 +201,15 @@ namespace WhileParser
     public:
         SkipNode() = default;
 
+        inline bool isEqual(ASTNode *other) const override
+        {
+            auto other_skip = dynamic_cast<SkipNode *>(other);
+            if (other_skip == nullptr)
+                return false;
+
+            return true;
+        }
+
         inline void printNode(int indent = 0) const override
         {
             printIndentation("SkipNode", indent);
@@ -158,6 +221,16 @@ namespace WhileParser
     public:
         WhileNode(std::unique_ptr<PredicateNode> condition, std::unique_ptr<StatementNode> statement)
             : m_condition(std::move(condition)), m_statement(std::move(statement)) {}
+
+        inline bool isEqual(ASTNode *other) const override
+        {
+            auto other_while = dynamic_cast<WhileNode *>(other);
+            if (other_while == nullptr)
+                return false;
+
+            return m_condition->isEqual(other_while->m_condition.get()) &&
+                   m_statement->isEqual(other_while->m_statement.get());
+        }
 
         inline void printNode(int indent = 0) const override
         {
@@ -184,6 +257,16 @@ namespace WhileParser
         MathExpressionNode(const std::string &math_operation, std::unique_ptr<ExpressionNode> left_expression,
                            std::unique_ptr<ExpressionNode> right_expression) : m_math_operation(math_operation), m_left_expression(std::move(left_expression)),
                                                                                m_right_expression(std::move(right_expression)) {}
+        inline bool isEqual(ASTNode *other) const override
+        {
+            auto other_mathexpr = dynamic_cast<MathExpressionNode *>(other);
+            if (other_mathexpr == nullptr)
+                return false;
+
+            return m_math_operation == other_mathexpr->m_math_operation &&
+                   m_left_expression->isEqual(other_mathexpr->m_left_expression.get()) &&
+                   m_right_expression->isEqual(other_mathexpr->m_right_expression.get());
+        }
 
         inline void printNode(int indent = 0) const override
         {
@@ -218,6 +301,15 @@ namespace WhileParser
     public:
         NotPredicateNode(std::unique_ptr<PredicateNode> predicate) : m_predicate(std::move(predicate)) {}
 
+        inline bool isEqual(ASTNode *other) const override
+        {
+            auto other_notpred = dynamic_cast<NotPredicateNode *>(other);
+            if (other_notpred == nullptr)
+                return false;
+
+            return m_predicate->isEqual(other_notpred->m_predicate.get());
+        }
+
         inline void printNode(int indent = 0) const override
         {
             printIndentation("NotPredicateNode", indent);
@@ -234,6 +326,17 @@ namespace WhileParser
         BooleanPredicateNode(const std::string &boolean_operation, std::unique_ptr<PredicateNode> left_predicate,
                              std::unique_ptr<PredicateNode> right_predicate) : m_boolean_operation(boolean_operation), m_left_predicate(std::move(left_predicate)),
                                                                                m_right_predicate(std::move(right_predicate)) {}
+
+        inline bool isEqual(ASTNode *other) const override
+        {
+            auto other_boolpred = dynamic_cast<BooleanPredicateNode *>(other);
+            if (other_boolpred == nullptr)
+                return false;
+
+            return m_boolean_operation == other_boolpred->m_boolean_operation &&
+                   m_left_predicate->isEqual(other_boolpred->m_left_predicate.get()) &&
+                   m_right_predicate->isEqual(other_boolpred->m_right_predicate.get());
+        }
 
         inline void printNode(int indent = 0) const override
         {
@@ -265,6 +368,17 @@ namespace WhileParser
                                 std::unique_ptr<ExpressionNode> right_expression) : m_relational_operation(relational_operation), m_left_expression(std::move(left_expression)),
                                                                                     m_right_expression(std::move(right_expression))
         {
+        }
+
+        inline bool isEqual(ASTNode *other) const override
+        {
+            auto other_relpred = dynamic_cast<RelationalPredicateNode *>(other);
+            if (other_relpred == nullptr)
+                return false;
+
+            return m_relational_operation == other_relpred->m_relational_operation &&
+                   m_left_expression->isEqual(other_relpred->m_left_expression.get()) &&
+                   m_right_expression->isEqual(other_relpred->m_right_expression.get());
         }
 
         inline void printNode(int indent = 0) const override

@@ -12,7 +12,14 @@ int main()
 
         auto root = parser.parse();
 
-        root->printNode();
+        // root->printNode();
+
+        auto other_root = std::make_unique<WhileParser::RootNode>();
+        other_root->addNode(std::move(std::make_unique<WhileParser::AssignmentNode>("x", std::move(std::make_unique<WhileParser::ExpressionNode>("a")))));
+
+        std::cout << (root->isEqual(other_root.get()) == true ? "EQUALS" : "NOT EQUALS") << std::endl;
+
+        other_root->printNode();
     }
     catch (std::runtime_error e)
     {
