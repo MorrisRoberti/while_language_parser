@@ -13,10 +13,15 @@ namespace WhileParser
     {
     public:
         Parser(const std::string &filename) : m_lexer(filename, true, true),
-                                              m_current_token(Token(TokenType::END_OF_FILE, "EOF")),
-                                              m_parenthesis_count(0)
+                                              m_current_token(Token(TokenType::END_OF_FILE, "EOF"))
         {
             advance(); // get the first token
+        }
+
+        Parser(std::unique_ptr<std::istream> raw_code) : m_lexer(std::move(raw_code), true, true),
+                                                         m_current_token(Token(TokenType::END_OF_FILE, "EOF"))
+        {
+            advance();
         }
 
         std::unique_ptr<RootNode> parse();
@@ -49,7 +54,6 @@ namespace WhileParser
 
         Lexer m_lexer;
         Token m_current_token; // lookahead (1)
-        int m_parenthesis_count;
     };
 
 }
