@@ -42,8 +42,9 @@ namespace WhileParser
                 return false;
 
             bool equal = true;
-            std::for_each(m_children.begin(), m_children.end(), [this, &equal, other_root, idx = 0](const std::unique_ptr<ASTNode> &child)
-                          { equal = equal && child.get()->isEqual(other_root->m_children.at(idx).get()); });
+            int idx = 0;
+            std::for_each(m_children.begin(), m_children.end(), [this, &equal, other_root, &idx](const std::unique_ptr<ASTNode> &child)
+                          { equal = equal && child.get()->isEqual(other_root->m_children.at(idx).get()); ++idx; });
 
             return equal;
         }
