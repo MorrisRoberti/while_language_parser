@@ -8,7 +8,7 @@ int main()
 
         std::cout << "Parsing..." << std::endl;
 
-        WhileParser::Parser parser("/home/morris/Workspace/while_parser/program.wh");
+        WhileParser::Parser parser("./program.wh");
 
         auto root = parser.parse();
 
