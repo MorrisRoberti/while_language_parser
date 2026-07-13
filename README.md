@@ -103,10 +103,14 @@ Factor       ::= '(' Expr ')'
 AddOp        ::= '+' | '-'
 MulOp        ::= '*' | '/'
 ```
-Not that some precedence rules have been imposed like:
+
+##### The language
+Note that some precedence rules have been imposed like:
 - `and` has an higher precedence than `or`
 - `*` and `/` have higher precedences than `+` and `-`
+The language only handles natural numbers but it's easily extensible to floating point and negative as well.
 
+Another thing to keep in mind is that, despite the presence of *boolean* values, the only assignable type is the said **natural type**.
 
 ## Build the project
 The project is very easy to build, it uses **make** and it can build *lexer* and *parser* indipendently. In particular, for each of them 2 build configuration are provided:

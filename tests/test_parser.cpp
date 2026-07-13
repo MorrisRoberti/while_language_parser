@@ -63,6 +63,24 @@ TEST(ParserTest, MathOperatorAssociativity)
     EXPECT_TRUE(ast_to_test->isEqual(correct_ast.get()));
 }
 
+TEST(ParserTest, MathExpressionsParenthesis)
+{
+    auto stream = std::make_unique<std::istringstream>("x := (2 + 3) * 4;");
+
+    WhileParser::Parser parser(std::move(stream));
+
+    auto ast_to_test = parser.parse();
+
+    auto correct_ast = std::make_unique<WhileParser::RootNode>();
+
+    correct_ast->addNode(std::make_unique<WhileParser::AssignmentNode>("x", std::make_unique<WhileParser::MathExpressionNode>(
+                                                                                "*",
+                                                                                std::make_unique<WhileParser::MathExpressionNode>("+", std::make_unique<WhileParser::ExpressionNode>("2"), std::make_unique<WhileParser::ExpressionNode>("4")),
+                                                                                std::make_unique<WhileParser::ExpressionNode>("4"))));
+
+    EXPECT_TRUE(ast_to_test->isEqual(correct_ast.get()));
+}
+
 TEST(ParserTest, BasicIf)
 {
     auto stream = std::make_unique<std::istringstream>("x := 10; if x > 10 then skip else skip endif");

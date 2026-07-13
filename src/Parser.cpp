@@ -61,9 +61,6 @@ namespace WhileParser
 
         consume(TokenType::ASSIGN, "Expected ASSIGN");
 
-        if (m_current_token.getType() != TokenType::IDENTIFIER && m_current_token.getType() != TokenType::NUMBER)
-            throw std::invalid_argument("The ASSIGNMENT construct is malformed: expected EXPRESSION, got " + m_current_token.getTokenTypeString());
-
         leftExpressionNode = parseExpression();
 
         consume(TokenType::SEMICOLON, "Expected SEMICOLON");
